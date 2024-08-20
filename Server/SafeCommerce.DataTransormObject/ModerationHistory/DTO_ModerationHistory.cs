@@ -11,6 +11,7 @@ public class DTO_ModerationHistory
 
     public string ModeratorId { get; set; } = string.Empty;
     public string ModeratorName { get; set; } = string.Empty;
+    public DateTime TimeStamp { get; set; }
 
     public bool Approved { get; set; }
 }

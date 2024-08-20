@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafeCommerce.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using SafeCommerce.DataAccess.Context;
 namespace SafeShare.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240820210551_AddedRelationsShipInModerationHistory")]
+    partial class AddedRelationsShipInModerationHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,7 +299,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogEntries", (string)null);
+                    b.ToTable("LogEntries");
                 });
 
             modelBuilder.Entity("SafeCommerce.DataAccess.Models.RefreshToken", b =>
@@ -334,7 +337,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Item", b =>
@@ -388,7 +391,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ItemShare", b =>
@@ -406,7 +409,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ItemShares", (string)null);
+                    b.ToTable("ItemShares");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Metadata", b =>
@@ -436,7 +439,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("Metadata", (string)null);
+                    b.ToTable("Metadata");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ModerationHistory", b =>
@@ -480,7 +483,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsUnique()
                         .HasFilter("[ShopId] IS NOT NULL");
 
-                    b.ToTable("ModerationHistories", (string)null);
+                    b.ToTable("ModerationHistories");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Shop", b =>
@@ -540,7 +543,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Shops", (string)null);
+                    b.ToTable("Shops");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopInvitation", b =>
@@ -583,7 +586,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("ShopInvitations", (string)null);
+                    b.ToTable("ShopInvitations");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopShare", b =>
@@ -613,7 +616,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShopShares", (string)null);
+                    b.ToTable("ShopShares");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -14,10 +14,10 @@ using SafeCommerce.Security.API.ActionFilters;
 using SafeCommerce.DataTransormObject.Security;
 using SafeCommerce.Security.User.Implementation;
 using SafeCommerce.Security.JwtSecurity.Helpers;
+using SafeCommerce.DataTransormObject.UserManagment;
 using SafeCommerce.DataTransormObject.Authentication;
 using SafeCommerce.MediatR.Actions.Queries.Authentication;
 using SafeCommerce.MediatR.Actions.Commands.Authentication;
-using SafeCommerce.DataTransormObject.UserManagment;
 
 namespace SafeCommerce.API.Controllers;
 

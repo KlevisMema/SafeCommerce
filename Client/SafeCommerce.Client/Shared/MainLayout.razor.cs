@@ -146,10 +146,15 @@ public partial class MainLayout
             await dialog.Result;
         }
 
-        var getSentInvitations = await InvitationService.GetShopsInvitations();
+        var role = await _localStorage.GetItemAsStringAsync("Role");
 
-        if (getSentInvitations != null && getSentInvitations.Succsess && getSentInvitations.Value is not null)
-            RecivedInvitationsList = getSentInvitations.Value;
+        if (role == Role.User.ToString())
+        {
+            var getSentInvitations = await InvitationService.GetShopsInvitations();
+
+            if (getSentInvitations != null && getSentInvitations.Succsess && getSentInvitations.Value is not null)
+                RecivedInvitationsList = getSentInvitations.Value;
+        }
 
         DataRetrieved = true;
         return;

@@ -126,6 +126,8 @@ public class ApplicationDbContext
             .HasForeignKey(m => m.ItemId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // ShopInvitation to User relationship
+
         modelBuilder.Entity<ShopInvitation>()
            .HasOne(gi => gi.InvitingUser)
            .WithMany(u => u.SentInvitations)
@@ -136,6 +138,20 @@ public class ApplicationDbContext
             .HasOne(gi => gi.InvitedUser)
             .WithMany(u => u.ReceivedInvitations)
             .HasForeignKey(gi => gi.InvitedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure one-to-one relationship between Item and ModerationHistory
+        modelBuilder.Entity<Item>()
+            .HasOne(i => i.ModerationHistory)
+            .WithOne(mh => mh.Item)
+            .HasForeignKey<ModerationHistory>(mh => mh.ItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure one-to-one relationship between Shop and ModerationHistory
+        modelBuilder.Entity<Shop>()
+            .HasOne(s => s.ModerationHistory)
+            .WithOne(mh => mh.Shop)
+            .HasForeignKey<ModerationHistory>(mh => mh.ShopId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

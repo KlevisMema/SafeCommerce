@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using SafeCommerce.DataAccess.Context;
-using SafeCommerce.DataAccess.Models;
-using SafeCommerce.DataTransormObject.Invitation;
-using SafeCommerce.DataTransormObject.Moderation;
-using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.Utilities.Log;
+using SafeCommerce.BLL.Interfaces;
+using Microsoft.Extensions.Logging;
+using SafeCommerce.Utilities.Enums;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SafeCommerce.DataAccess.Models;
+using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Utilities.Responses;
+using SafeCommerce.Utilities.Dependencies;
+using SafeCommerce.DataTransormObject.ModerationHistory;
 
 namespace SafeCommerce.BLL.RepositoryService;
 
@@ -24,12 +26,13 @@ public class ModerationService
     mapper,
     logger,
     httpContextAccessor
-)
+), IModerationService
 {
-    public async Task<Util_GenericResponse<IEnumerable<DTO_ModerationHistory>>>
+    public async Task<Util_GenericResponse<DTO_SplittedModerationHistory>>
     GetModerationHistoryForModerator
     (
-        Guid moderatorId
+        Guid moderatorId,
+        CancellationToken cancellationToken = default
     )
     {
         try
@@ -45,14 +48,41 @@ public class ModerationService
                 """,
                  moderatorId);
 
-                return Util_GenericResponse<IEnumerable<DTO_ModerationHistory>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<DTO_SplittedModerationHistory>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
             }
 
-            return Util_GenericResponse<IEnumerable<DTO_ModerationHistory>>.Response(null, true, "User does not exists", null, System.Net.HttpStatusCode.OK);
+            var userIsModerator = await userManager.IsInRoleAsync(user, Role.Moderator.ToString());
+
+            if (!userIsModerator)
+            {
+                _logger.LogError(
+               """
+                    [ModerationService]-[GetModerationHistoryForModerator Method] =>
+                    [RESULT]:  User with id {userId} does not have access to this.
+                """,
+                moderatorId);
+
+                return Util_GenericResponse<DTO_SplittedModerationHistory>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.Unauthorized);
+            }
+
+            var moderationHistory = await _db.ModerationHistories.Include(m => m.Moderator)
+                                                                 .Include(sh => sh.Shop)
+                                                                 .Include(i => i.Item)
+                                                                 .Where(x => x.ModeratorId == moderatorId.ToString())
+                                                                 .Select(rec => _mapper.Map<DTO_ModerationHistory>(rec))
+                                                                 .ToListAsync(cancellationToken);
+
+            var result = new DTO_SplittedModerationHistory
+            {
+                Items = moderationHistory.Where(shop => shop.ShopId == null),
+                Shops = moderationHistory.Where(item => item.ItemId == null)
+            };
+
+            return Util_GenericResponse<DTO_SplittedModerationHistory>.Response(result, true, "User does not exists", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<IEnumerable<DTO_ModerationHistory>, ModerationService>.ReturnInternalServerError
+            return await Util_LogsHelper<DTO_SplittedModerationHistory, ModerationService>.ReturnInternalServerError
             (
                 ex,
                 _logger,
