@@ -22,6 +22,9 @@ public class Item : Base
     public bool IsPublic { get; set; }
     public bool MakePublic { get; set; }
 
+    public Guid ModerationHistoryId { get; set; }
+    public virtual ModerationHistory? ModerationHistory { get; set; }
+
     public virtual ICollection<ItemShare>? ItemShares { get; set; }
     public virtual ICollection<Metadata>? Metadata { get; set; }
 }

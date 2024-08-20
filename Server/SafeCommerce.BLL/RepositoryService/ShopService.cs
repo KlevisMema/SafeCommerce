@@ -13,6 +13,7 @@ using SafeShare.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Responses;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Shop;
+using SendGrid.Helpers.Mail;
 
 namespace SafeCommerce.BLL.RepositoryService
 {
@@ -136,7 +137,7 @@ namespace SafeCommerce.BLL.RepositoryService
         {
             try
             {
-                var shop = await _db.Shops.FirstOrDefaultAsync(s => s.ShopId == shopId && s.OwnerId == ownerId, cancellationToken);
+                var shop = await _db.Shops.Include(x => x.ModerationHistory).FirstOrDefaultAsync(s => s.ShopId == shopId && s.OwnerId == ownerId, cancellationToken);
                 if (shop == null)
                 {
                     _logger.LogWarning(
@@ -148,6 +149,8 @@ namespace SafeCommerce.BLL.RepositoryService
 
                     return Util_GenericResponse<bool>.Response(false, false, "Shop not found or no permission to delete.", null, HttpStatusCode.NotFound);
                 }
+
+                _db.ModerationHistories.Remove(shop.ModerationHistory!);
 
                 _db.Shops.Remove(shop);
                 await _db.SaveChangesAsync(cancellationToken);

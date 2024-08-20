@@ -46,6 +46,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using SafeCommerce.MediatR.Handlers.CommandsHandlers.Authentication;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using SafeCommerce.Mappings.Invitation;
+using SafeCommerce.Mappings.Moderation;
 
 namespace SafeCommerce.API.Startup;
 
@@ -176,6 +177,7 @@ internal static class API_Helper_ProgramStartup
         Services.AddScoped<IAUTH_Register, AUTH_Register>();
         Services.AddScoped<IShopInvitations, ShopInvitations>();
         Services.AddScoped<IAccountManagment, AccountManagment>();
+        Services.AddScoped<IModerationService, ModerationService>();
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
         Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
         Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
@@ -224,6 +226,7 @@ internal static class API_Helper_ProgramStartup
     {
         Services.AddAutoMapper(typeof(Mapper_Shop));
         Services.AddAutoMapper(typeof(Mapper_Item));
+        Services.AddAutoMapper(typeof(Mapper_Moderation));
         Services.AddAutoMapper(typeof(Mapper_Invitation));
         Services.AddAutoMapper(typeof(Mapping_Authentication));
         Services.AddAutoMapper(typeof(Mapper_AccountManagment));

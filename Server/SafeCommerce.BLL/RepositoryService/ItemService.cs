@@ -13,6 +13,7 @@ using SafeCommerce.DataTransormObject.Moderation;
 using Microsoft.AspNetCore.Identity;
 using SafeCommerce.DataAccess.Models;
 using SafeCommerce.Utilities.Enums;
+using SendGrid.Helpers.Mail;
 
 namespace SafeCommerce.BLL.RepositoryService;
 public class ItemService
@@ -130,7 +131,7 @@ public class ItemService
     {
         try
         {
-            var item = await _db.Items.FirstOrDefaultAsync(i => i.ItemId == itemId && i.OwnerId == ownerId, cancellationToken);
+            var item = await _db.Items.Include(x => x.ModerationHistory).FirstOrDefaultAsync(i => i.ItemId == itemId && i.OwnerId == ownerId, cancellationToken);
             if (item == null)
             {
                 _logger.LogWarning(
@@ -142,7 +143,7 @@ public class ItemService
 
                 return Util_GenericResponse<bool>.Response(false, false, "Item not found or no permission to delete.", null, System.Net.HttpStatusCode.NotFound);
             }
-
+            _db.ModerationHistories.Remove(item.ModerationHistory!);
             _db.Items.Remove(item);
             await _db.SaveChangesAsync(cancellationToken);
 

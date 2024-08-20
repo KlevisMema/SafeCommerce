@@ -45,6 +45,7 @@ builder.Services.AddScoped<TokenExpiryHandler>();
 builder.Services.AddScoped<IClientService_Shop, ClientService_Shop>();
 builder.Services.AddScoped<IClientService_Item, ClientService_Item>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IClientService_Moderation, ClientService_Moderation>();
 builder.Services.AddScoped<IClientService_Invitation, ClientService_Invitation>();
 builder.Services.AddScoped<IClientService_UserManagment, ClientService_UserManagment>();
 builder.Services.AddScoped<IClientAuthentication_TokenRefreshService, ClientAuthentication_TokenRefreshService>(); 

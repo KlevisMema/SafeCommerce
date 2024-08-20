@@ -1,0 +1,113 @@
+﻿@using SafeCommerce.ClientDTO.Moderation
+<style>
+    :root {
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .overContainer {
+        padding: 10px 30px 10px 30px;
+    }
+
+    .mud-data-grid .mud-table-cell .mud-resizer:hover {
+        border-right: 2px solid #00838F !important;
+    }
+
+    .mud-data-grid .mud-table-cell .mud-resizing {
+        border-right: 2px solid #00838F !important;
+    }
+</style>
+
+<div class="d-flex flex-wrap mt-4 overContainer">
+    <MudSwitch @bind-Value="Hover" Color="Color.Primary">Hover</MudSwitch>
+    <MudSwitch @bind-Value="Dense" Color="Color.Secondary">Dense</MudSwitch>
+    <MudSwitch @bind-Value="Striped" Color="Color.Tertiary">Striped</MudSwitch>
+    <MudSwitch @bind-Value="Bordered" Color="Color.Warning">Bordered</MudSwitch>
+    <MudSpacer />
+</div>
+
+<div class="overContainer">
+    <MudDataGrid T="ClientDto_ModerationHistory"
+                 Dense="@Dense"
+                 Hover="@Hover"
+                 Groupable="true"
+                 Filterable="true"
+                 Virtualize="true"
+                 FixedHeader="true"
+                 ShowMenuIcon="true"
+                 Items="@ModerationHistory.Shops"
+                 Striped="@Striped"
+                 Bordered="@Bordered"
+                 Breakpoint="Breakpoint.Sm"
+                 ColumnsPanelReordering=true
+                 SortMode="SortMode.Multiple"
+                 DragDropColumnReordering=true
+                 LoadingProgressColor="Color.Info"
+                 ColumnResizeMode="ResizeMode.Column"
+                 QuickFilter="new Func<ClientDto_ModerationHistory,bool>(FilterFunc1)">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">List of Shops</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="SearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+
+        <Columns>
+            <PropertyColumn Property="shop => shop.ShopName" Title="Shop Name" Hidden="false" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="shop => shop.ModeratorName" Title="Moderator" Hidden="false" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="shop => shop.TimeStamp" Title="Time Stamp" Hidden="false" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="shop => shop.Approved" Title="Approved" Hidden="false" Sortable="true" Filterable="true" />
+        </Columns>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+
+    </MudDataGrid>
+</div>
+
+<div class="overContainer">
+    <MudDataGrid T="ClientDto_ModerationHistory"
+                 Dense="@Dense"
+                 Hover="@Hover"
+                 Groupable="true"
+                 Filterable="true"
+                 Virtualize="true"
+                 FixedHeader="true"
+                 ShowMenuIcon="true"
+                 Items="@ModerationHistory.Items"
+                 Striped="@Striped"
+                 Bordered="@Bordered"
+                 Breakpoint="Breakpoint.Sm"
+                 ColumnsPanelReordering=true
+                 SortMode="SortMode.Multiple"
+                 DragDropColumnReordering=true
+                 LoadingProgressColor="Color.Info"
+                 ColumnResizeMode="ResizeMode.Column"
+                 QuickFilter="new Func<ClientDto_ModerationHistory,bool>(FilterFunc1)">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">List of Items</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="SearchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+
+        <Columns>
+            <PropertyColumn Property="shop => shop.ItemName" Title="Item Name" Hidden="false" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="shop => shop.ModeratorName" Title="Moderator" Hidden="false" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="shop => shop.TimeStamp" Title="Time Stamp" Hidden="false" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="shop => shop.Approved" Title="Approved" Hidden="false" Sortable="true" Filterable="true" />
+        </Columns>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+
+    </MudDataGrid>
+</div>
+

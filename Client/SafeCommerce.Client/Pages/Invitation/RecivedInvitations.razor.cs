@@ -3,13 +3,16 @@ using SafeCommerce.ClientDTO.Enums;
 using Microsoft.AspNetCore.Components;
 using SafeCommerce.ClientDTO.Invitation;
 using SafeCommerce.ClientServices.Interfaces;
+using Blazored.LocalStorage;
 
 namespace SafeCommerce.Client.Pages.Invitation;
 
 public partial class RecivedInvitations
 {
-    [Inject] IClientService_Invitation InvitationService { get; set; } = null!;
     [Inject] public ISnackbar _snackbar { get; set; } = null!;
+    [Inject] ILocalStorageService LocalStorage { get; set; } = null!;
+    [Inject] NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] IClientService_Invitation InvitationService { get; set; } = null!;
     private List<ClientDto_RecivedInvitations> RecivedInvitationsList { get; set; } = [];
 
     private bool _processingRejectInvitation = false;
@@ -17,10 +20,21 @@ public partial class RecivedInvitations
 
     protected override async Task OnInitializedAsync()
     {
-        var getSentInvitations = await InvitationService.GetShopsInvitations();
+        var role = await LocalStorage.GetItemAsStringAsync("Role");
 
-        if (getSentInvitations != null && getSentInvitations.Succsess && getSentInvitations.Value is not null)
-            RecivedInvitationsList = getSentInvitations.Value;
+        if (role == null)
+        {
+            NavigationManager.NavigateTo("/", true);
+            return;
+        }
+
+        if (role == Role.User.ToString())
+        {
+            var getSentInvitations = await InvitationService.GetShopsInvitations();
+
+            if (getSentInvitations != null && getSentInvitations.Succsess && getSentInvitations.Value is not null)
+                RecivedInvitationsList = getSentInvitations.Value;
+        }
     }
 
     private async Task

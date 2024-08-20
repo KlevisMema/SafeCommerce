@@ -109,6 +109,12 @@
                 <MudNavLink Match="NavLinkMatch.All" Href="/Recived-Invitations" Icon="@Icons.Material.Filled.CallReceived" IconColor="Color.Inherit">Recived Invitations</MudNavLink>
             </MudNavGroup>
         }
+        else
+        {
+            <MudNavGroup Title="Moderation" Icon="@Icons.Material.Filled.AddModerator" IconColor="Color.Inherit" Expanded="false">
+                <MudNavLink Match="NavLinkMatch.All" Href="/Moderation-History" Icon="@Icons.Material.Filled.ManageHistory" IconColor="Color.Inherit">Moderation History</MudNavLink>
+            </MudNavGroup>
+        }
     }
 
 </MudNavMenu>

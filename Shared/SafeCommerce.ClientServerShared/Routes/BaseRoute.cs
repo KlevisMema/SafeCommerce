@@ -10,15 +10,18 @@ namespace SafeCommerce.ClientServerShared.Routes;
 public static class BaseRoute
 {
     public const string Route = "api/[controller]";
+    public const string RouteShopForClient = "api/Shop/";
+    public const string RouteItemForClient = "api/Item/";
+    public const string RouteModeration = "api/Moderation/";
+    public const string RouteShopInvitationForClient = "api/Invitation/";
     public const string RouteAuthenticationForClient = "api/Authentication/";
     public const string RouteAccountManagmentForClient = "api/AccountManagment/";
-    public const string RouteItemForClient = "api/Item/";
-    public const string RouteShopForClient = "api/Shop/";
-    public const string RouteShopInvitationForClient = "api/Invitation/";
 
-    public const string RouteAuthenticationProxy = "api/AuthProxy/";
-    public const string RouteProxyShopInvitationForClient = "api/ShopInvitatonProxy/";
-    public const string RouteAccountManagmentProxy = "api/AccountManagmentProxy/";
     public const string RouteItemProxy = "api/ItemProxy/";
     public const string RouteShopProxy = "api/ShopProxy/";
+    public const string RouteAuthenticationProxy = "api/AuthProxy/";
+    public const string ProxyRouteModeration = "api/ModerationProxy/";
+    public const string RouteAccountManagmentProxy = "api/AccountManagmentProxy/";
+    public const string RouteProxyShopInvitationForClient = "api/ShopInvitatonProxy/";
+    public const string ProxyRouteAccountManagmentForClient = "api/AccountManagmentProxy/";
 }

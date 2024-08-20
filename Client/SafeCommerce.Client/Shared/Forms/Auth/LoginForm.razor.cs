@@ -273,19 +273,18 @@ public partial class LoginForm
         bool fromServer
     )
     {
-        if (fromServer)
+        if (validationMessages is not null)
         {
-            foreach (var validationMessage in validationMessages)
+            if (fromServer)
             {
-                _snackbar.Add(validationMessage, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
+                foreach (var validationMessage in validationMessages)
+                    _snackbar.Add(validationMessage, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
+
+                return;
             }
 
-            return;
-        }
-
-        foreach (var validationMessage in validationMessages)
-        {
-            _snackbar.Add($"{mode} - {validationMessage}", Severity.Warning, config => { config.CloseAfterNavigation = true; });
+            foreach (var validationMessage in validationMessages)
+                _snackbar.Add($"{mode} - {validationMessage}", Severity.Warning, config => { config.CloseAfterNavigation = true; });
         }
     }
 
