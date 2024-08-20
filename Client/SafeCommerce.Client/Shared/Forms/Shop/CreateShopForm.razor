@@ -1,0 +1,67 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .overContainer {
+        padding: 10px 30px 10px 30px;
+    }
+</style>
+
+<div class="overContainer">
+    <EditForm Model="@CreateShopDto" @ref="CreateShopFormContext">
+        <DataAnnotationsValidator />
+        <MudItem>
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Shop name"
+                                  HelperText="Enter shop name"
+                                  @bind-Value="CreateShopDto.Name"
+                                  Adornment="Adornment.End"
+                                  Required=true />
+
+                    <MudTextField Label="Description"
+                                  HelperText="Enter shop description"
+                                  Class="mt-3"
+                                  Adornment="Adornment.End"
+                                  Required=true
+                                  Variant="Variant.Outlined"
+                                  Lines="5"
+                                  @bind-Value="CreateShopDto.Description"
+                                  InputType="InputType.Text" />
+
+                    <MudCheckBox Label="Make public" @bind-Value="CreateShopDto.MakePublic" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Style="@($"background:{Colors.Cyan.Darken3};")"
+                               Class="ml-auto"
+                               Disabled="@_processing"
+                               OnClick="ValidateForm">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                            <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3}")">Creating</MudText>
+                        }
+                        else
+                        {
+                            <MudText Style="@($"color:white")">Create</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </EditForm>
+</div>

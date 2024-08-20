@@ -1,0 +1,135 @@
+﻿<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
+    <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanel Text="My Shops" Expanded="true">
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel Text="Private Shops" Expanded="true">
+                    <MudGrid>
+                        @foreach (var shop in GroupedShops.MyPrivateShops)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudCard Class="shop-card private-shop-card">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h6">@shop.Name</MudText>
+                                        <MudText Typo="Typo.body2">@shop.Description</MudText>
+                                        <MudChip T="string" Color="Color.Primary">Private</MudChip>
+                                        @if (shop.MakePublic && !shop.IsPublic)
+                                        {
+                                            <MudChip T="string" Color="Color.Warning">Under Moderation</MudChip>
+                                        }
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudTooltip Duration="1000" Text="Duration: 1000" Arrow="true" Color="Color.Primary" Placement="Placement.Start">
+                                            <ChildContent>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" />
+                                            </ChildContent>
+                                            <TooltipContent>
+                                                <MudPaper Elevation="3" Class="pa-4">
+                                                    <MudText Typo="Typo.subtitle1">Shop Details</MudText>
+                                                    <MudDivider Class="my-2" />
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.DateRange" /> Created: @shop.CreatedAt.ToShortDateString()</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Update" /> Modified: @shop.ModifiedAt?.ToShortDateString() ?? "N/A"</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Group" /> Members: @shop.MemberCount</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.ShoppingBasket" /> Members: @shop.ItemCount</MudText>
+                                                </MudPaper>
+                                            </TooltipContent>
+                                        </MudTooltip>
+                                        <MudTooltip Text="View Items">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Edit">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditShopOpenDialog(shop))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Delete">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteShopOpenDialog(shop, true))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Invite">
+                                            <MudIconButton Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Success" OnClick="@(() => OpenInvitationDialog(shop, true))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="View Members">
+                                            <MudIconButton Icon="@Icons.Material.Filled.People" Color="Color.Tertiary" OnClick="@(() => OpenMembersDialog(shop.ShopId, true))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                        </MudTooltip>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="Public Shops" Expanded="false">
+                    <MudGrid>
+                        @foreach (var shop in GroupedShops.MyPublicShops)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudCard Class="shop-card public-shop-card">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h6">@shop.Name</MudText>
+                                        <MudText Typo="Typo.body2">@shop.Description</MudText>
+                                        <MudChip T="string" Color="Color.Secondary">Public</MudChip>
+                                        @if (shop.MakePublic && !shop.IsPublic)
+                                        {
+                                            <MudChip T="string" Color="Color.Warning">Under Moderation</MudChip>
+                                        }
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudTooltip Duration="1000" Text="Duration: 1000" Arrow="true" Color="Color.Primary" Placement="Placement.Start">
+                                            <ChildContent>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" />
+                                            </ChildContent>
+                                            <TooltipContent>
+                                                <MudPaper Elevation="3" Class="pa-4">
+                                                    <MudText Typo="Typo.subtitle1">Shop Details</MudText>
+                                                    <MudDivider Class="my-2" />
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.DateRange" /> Created: @shop.CreatedAt.ToShortDateString()</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Update" /> Modified: @shop.ModifiedAt?.ToShortDateString() ?? "N/A"</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Group" /> Members: @shop.MemberCount</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.ShoppingBasket" /> Members: @shop.ItemCount</MudText>
+                                                </MudPaper>
+                                            </TooltipContent>
+                                        </MudTooltip>
+                                        @if (shop.IsPublic)
+                                        {
+                                            <MudTooltip Text="View Items">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                            </MudTooltip>
+                                            <MudTooltip Text="Edit">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditShopOpenDialog(shop))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                            </MudTooltip>
+                                            <MudTooltip Text="Delete">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteShopOpenDialog(shop, false))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                            </MudTooltip>
+                                        }
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Shops I've Joined" Expanded="false">
+            <MudGrid>
+                @foreach (var shop in GroupedShops.JoinedShops)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Class="shop-card joined-shop-card">
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">@shop.Name</MudText>
+                                <MudText Typo="Typo.body2">@shop.Description</MudText>
+                                <MudChip T="string" Color="Color.Info">Joined</MudChip>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudTooltip Text="View Items">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" />
+                                </MudTooltip>
+                                <MudTooltip Text="View Members">
+                                    <MudIconButton Icon="@Icons.Material.Filled.People" Color="Color.Tertiary" OnClick="@(() => OpenMembersDialog(shop.ShopId, false))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                </MudTooltip>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+</MudContainer>

@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+
+<MudLayout Class="position-relative">
+    <MudAppBar Elevation="1" Style="@($"background:{Colors.Cyan.Darken3};")">
+        <MudText Typo="Typo.h5" Class="ml-3">Safe Commerce</MudText>
+        <MudSpacer />
+    </MudAppBar>
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+
+</MudLayout>

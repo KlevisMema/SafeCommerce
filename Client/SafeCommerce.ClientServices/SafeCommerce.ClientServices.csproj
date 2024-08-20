@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="8.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\SafeCommerce.ClientServerShared\SafeCommerce.ClientServerShared.csproj" />
+    <ProjectReference Include="..\SafeCommerce.ClientDTO\SafeCommerce.ClientDTO.csproj" />
+    <ProjectReference Include="..\SafeCommerce.ClientUtilities\SafeCommerce.ClientUtilities.csproj" />
+  </ItemGroup>
+
+</Project>

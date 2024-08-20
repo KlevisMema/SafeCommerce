@@ -1,0 +1,139 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>98befe05-9c27-476b-bae4-c7b5fd11ed0d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\NpmJs\**" />
+    <Content Remove="wwwroot\NpmJs\**" />
+    <EmbeddedResource Remove="wwwroot\NpmJs\**" />
+    <None Remove="wwwroot\NpmJs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\js\disableDevTools.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\disableDevTools.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.7" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.7" />
+    <!--<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.13" />-->
+    <!--<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.13" PrivateAssets="all" />-->
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="8.0.7" />
+    <PackageReference Include="MudBlazor" Version="7.6.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\SafeCommerce.ClientServerShared\SafeCommerce.ClientServerShared.csproj" />
+    <ProjectReference Include="..\SafeCommerce.ClientDTO\SafeCommerce.ClientDTO.csproj" />
+    <ProjectReference Include="..\SafeCommerce.ClientServices\SafeCommerce.ClientServices.csproj" />
+    <ProjectReference Include="..\SafeCommerce.ClientUtilities\SafeCommerce.ClientUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\disableDevTools.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\.eslintrc" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\.gitignore" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\.npmignore" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\.travis.yml" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\AUTHORS.md" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\CHANGELOG.md" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\LICENSE" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\nacl-fast.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\nacl-fast.min.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\nacl.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\nacl.min.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\PULL_REQUEST_TEMPLATE.md" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\README.md" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\00-api.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\01-verify.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\02-randombytes.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\03-onetimeauth.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\04-secretbox.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\04-secretbox.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\05-scalarmult.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\06-box.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\06-box.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\07-hash.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\07-hash.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\08-sign.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\08-sign.quick.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\benchmark\bench.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\benchmark\helpers.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\benchmark\README" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\browser\.gitignore" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\browser\init.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\browser\README" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\.gitignore" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\00-secretbox.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\01-scalarmult.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\02-box.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\03-hash.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\04-sign.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\05-sign-keypair.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\cbox.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\chash.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\cscalarmult.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\csecretbox.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\csign-keypair.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\csign.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\Makefile" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\README" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\tweetnacl.c" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\c\tweetnacl.h" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\base64.random.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\box.random.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\hash.random.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\hash.spec.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\onetimeauth.spec.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\README" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\scalarmult.random.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\secretbox.random.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\data\sign.spec.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\base64.go" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\box.go" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\hash.go" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\README" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\scalarmult.go" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\secretbox.go" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\generate_data\sign.go" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\test\timing\timing.js" />
+    <None Include="wwwroot\js\tweetnacl-js-1.0.3\yarn.lock" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\.gitignore" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\.npmignore" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\.travis.yml" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\AUTHORS.md" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\LICENSE" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\nacl-util.js" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\nacl-util.min.js" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\README.md" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\test\browser\bundle.js" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\test\test.js" />
+    <None Include="wwwroot\js\tweetnacl-util-js-master\yarn.lock" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\js\tweetnacl-js-1.0.3\nacl.d.ts" />
+    <TypeScriptCompile Include="wwwroot\js\tweetnacl-util-js-master\nacl-util.d.ts" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <!--<Exec Command="npm install" WorkingDirectory="wwwroot\NpmJS" />-->
+    <!--<Exec Command="npm run build" WorkingDirectory="wwwroot\NpmJS" />-->
+  </Target>
+
+</Project>

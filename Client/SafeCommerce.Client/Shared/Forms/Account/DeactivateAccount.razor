@@ -1,0 +1,62 @@
+﻿<style class="apply-nonce">
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+    }
+
+    .mud-dialog {
+        width: 400px !important;
+    }
+
+        .mud-dialog .mud-dialog-actions {
+            padding: 8px 24px 16px 24px !important;
+        }
+
+        .mud-dialog .mud-dialog-title {
+            padding: 16px 24px 8px 24px !important;
+        }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="mr-3 mb-n1" />
+            Deactivate Account?
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm @ref="@deactivateAccountForm" Model="@Dto_DeactivateAccount">
+            <DataAnnotationsValidator />
+            <MudTextField InputType="InputType.Email" @bind-Value="@Dto_DeactivateAccount.Email" Label="Email"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Email"
+                          AdornmentColor="Color.Primary"
+                          AdornmentAriaLabel="Show Password"
+                          Variant="Variant.Outlined"
+                          Required=true />
+
+            <MudTextField InputType="@PasswordInput" @bind-Value="@Dto_DeactivateAccount.Password" Label="Password"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@PasswordInputIcon"
+                          AdornmentColor="Color.Primary"
+                          OnAdornmentClick="DisplayTxtPassword"
+                          AdornmentAriaLabel="Show Password"
+                          Variant="Variant.Outlined"
+                          Required=true />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_processing" Style="@($"background:{Colors.Cyan.Darken3};")" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="ValidateForm">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3};")">Deactivating</MudText>
+            }
+            else
+            {
+                <MudText Style="@($"color:white;")">Deactivate</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

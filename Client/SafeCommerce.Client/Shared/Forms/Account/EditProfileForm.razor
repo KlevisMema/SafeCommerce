@@ -1,0 +1,194 @@
+﻿@using SafeCommerce.ClientDTO.Enums
+
+<style class="apply-nonce">
+    :root {
+        --background-color1: #fafaff;
+        --background-color2: #ffffff;
+        --background-color3: #ededed;
+        --background-color4: #cad7fda4;
+        --primary-color: #4b49ac;
+        --secondary-color: #00838F;
+        --Border-color: #00838F;
+        --one-use-color: #00838F;
+        --two-use-color: #00838F;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: var(--secondary-color);
+    }
+
+    .profile-button {
+        background: rgb(99, 39, 120);
+        box-shadow: none;
+        border: none
+    }
+
+        .profile-button:hover {
+            background: var(--secondary-color);
+        }
+
+        .profile-button:focus {
+            background: var(--secondary-color);
+            box-shadow: none
+        }
+
+        .profile-button:active {
+            background: var(--secondary-color);
+            box-shadow: none
+        }
+
+    .back:hover {
+        color: #682773;
+        cursor: pointer
+    }
+
+    .labels {
+        font-size: 11px
+    }
+
+    .add-experience:hover {
+        background: #BA68C8;
+        color: #fff;
+        cursor: pointer;
+        border: solid 1px #BA68C8
+    }
+
+    .overContainer {
+        padding: 10px 30px 10px 30px;
+    }
+
+    .editUserDataFrom {
+        display: flex;
+    }
+</style>
+
+<MudSnackbarProvider />
+
+<div class="overContainer">
+
+    <div class="container rounded bg-white mt-5 mb-5">
+        <div class="row">
+            <EditForm @ref="editProfileForm" Model="@UpdateUser" class="editUserDataFrom" Context="EditUserDataForm">
+                <DataAnnotationsValidator />
+                <div class="col-md-3 border-right">
+                    <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+                        @if (UserInfo.ProfilePicture is null || UserInfo.ProfilePicture.Length == 0)
+                        {
+                            <div class="rounded-circle bg-secondary text-light" style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+                                @(String.IsNullOrEmpty(UserInfo.FullName) ? string.Empty : UserInfo?.FullName?[0])
+                            </div>
+                        }
+                        else
+                        {
+                            <img src="data:image/png;base64,@Convert.ToBase64String(UserInfo.ProfilePicture)" alt="User Image" width="150px" />
+                        }
+                        <br />
+                        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" FilesChanged="UploadFile" MaximumFileCount="1" AppendMultipleFiles="false" Required="true">
+                            <ActivatorContent>
+                                    <MudButton HtmlTag="label"
+                                               Variant="Variant.Outlined"
+                                               Style="@($"color:{Colors.Cyan.Darken3};")"
+                                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                                        @BtnMessage
+                                    </MudButton>
+                                </ActivatorContent>
+                        </MudFileUpload>
+                        <br />
+                        @if (file != null)
+                        {
+                            <MudList T="string">
+                                <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                                    @file.Name <code>@file.Size bytes</code>
+                                </MudListItem>
+                            </MudList>
+                            <div>
+                                <MudButton Disabled="@_processingUploadProfilePic" Variant="Variant.Filled" Style="@($"background:{Colors.Cyan.Darken3};")" OnClick="UploadProfilePicture">
+                                    @if (_processingUploadProfilePic)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                                        <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3};")">UPLOADING</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText Style="@($"color:white;")">UPLOAD</MudText>
+                                    }
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Surface" OnClick="ClearSelection">Clear</MudButton>
+                            </div>
+                        }
+                        <br />
+                        <div>
+                            @if (UserInfo.Gender == ClientDTO.Enums.Gender.Male)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Male" Title="Male" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Female" Title="Female" />
+                            }
+                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Title="Verified" />
+                        </div>
+                        <span class="font-weight-bold">@(UpdateUser?.FullName ?? string.Empty)</span>
+                        <span class="text-black-50">@(UserInfo?.Email ?? string.Empty)</span>
+                        <span> </span>
+                    </div>
+                </div>
+                <div class="col-md-5 border-right">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-right">Profile Settings</h4>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12"><label class="labels">Full Name</label><input type="text" class="form-control" @bind-value="@UpdateUser.FullName" placeholder="Full name" required></div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12"><label class="labels">UserName</label><input type="text" class="form-control" @bind-value="@UpdateUser.UserName" placeholder="Username" required></div>
+                            <div class="col-md-12"><label class="labels">Mobile Number</label><input type="text" class="form-control" @bind-value="@UpdateUser.PhoneNumber" placeholder="Phone Number" required></div>
+                            <div class="col-md-12"><label class="labels">Age</label><input type="text" class="form-control" value="@(UserInfo?.Age ?? 0)" readonly></div>
+                            <div class="col-md-12"><label class="labels">Birthday</label><input type="date" class="form-control" @bind-value="@UpdateUser.Birthday" placeholder="Birthaday" required></div>
+
+                            <MudSelect @bind-Value="@UpdateUser.Gender" Label="Select your gender" Class="SelectGender">
+                                <MudSelectItem Value="@(Gender.Male)" Class="SelectGenderItem">Male</MudSelectItem>
+                                <MudSelectItem Value="@(Gender.Female)" Class="SelectGenderItem">Female</MudSelectItem>
+                            </MudSelect>
+
+                            <div class="col-md-12"><label class="labels">Created At</label><input type="text" class="form-control" readonly value="@(UserInfo?.CreatedAt ?? null)"></div>
+                            <div class="col-md-12"><label class="labels">Modified At</label><input type="text" class="form-control" readonly value="@(UserInfo?.ModifiedAt ?? null)"></div>
+                            <div class="col-md-12">
+                                <label class="labels">2FA</label>
+                                <MudSwitch @bind-Value="@UpdateUser.Enable2FA" Style="@($"color:{Colors.Cyan.Darken3};")" Label="@(UpdateUser.Enable2FA ? "Active" : "Not Active")" />
+                            </div>
+                        </div>
+                        <MudButton Disabled="@_processing" OnClick="(() => ValidateEditUserDataForm())" Variant="Variant.Filled" Style="@($"color:{Colors.Cyan.Darken3};")">
+
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                                <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3};")">UPDATING</MudText>
+                            }
+                            else
+                            {
+                                <MudText>UPDATE</MudText>
+                            }
+
+                        </MudButton>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center experience"><span>Additional Details</span></div><br>
+                        <div class="col-md-12"><label class="labels">lattest log in</label><input type="text" class="form-control" readonly value="@(UserInfo?.LastLogIn ?? null)"></div> <br>
+                        <div class="col-md-12"><label class="labels">lattest log out</label><input type="text" class="form-control" readonly value="@(UserInfo?.LastLogOut ?? null)"></div>
+                    </div>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+</div>

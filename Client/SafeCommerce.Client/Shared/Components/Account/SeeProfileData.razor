@@ -1,0 +1,139 @@
+﻿<style class="apply-nonce">
+    :root {
+        --background-color1: #fafaff;
+        --background-color2: #ffffff;
+        --background-color3: #ededed;
+        --background-color4: #cad7fda4;
+        --primary-color: #4b49ac;
+        --secondary-color: rgba(89,74,226,1);
+        --Border-color: #3f0097;
+        --one-use-color: #3f0097;
+        --two-use-color: #5500cb;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: var(--secondary-color);
+    }
+
+    .profile-button {
+        background: rgb(99, 39, 120);
+        box-shadow: none;
+        border: none
+    }
+
+        .profile-button:hover {
+            background: var(--secondary-color);
+        }
+
+        .profile-button:focus {
+            background: var(--secondary-color);
+            box-shadow: none
+        }
+
+        .profile-button:active {
+            background: var(--secondary-color);
+            box-shadow: none
+        }
+
+    .back:hover {
+        color: #682773;
+        cursor: pointer
+    }
+
+    .labels {
+        font-size: 11px
+    }
+
+    .add-experience:hover {
+        background: #BA68C8;
+        color: #fff;
+        cursor: pointer;
+        border: solid 1px #BA68C8
+    }
+
+    .overContainer {
+        padding: 10px 30px 10px 30px;
+    }
+</style>
+
+<div class="overContainer">
+
+    <div class="container rounded bg-white mt-5 mb-5">
+        <div class="row">
+            @if (!DataRetrieved)
+            {
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="300px" Width="100%" />
+            }
+            else
+            {
+                <div class="col-md-3 border-right">
+                    <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+                        @if (UserInfo.ProfilePicture is null || UserInfo.ProfilePicture.Length == 0)
+                        {
+                            <div class="rounded-circle bg-secondary text-light" style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+                                @(String.IsNullOrEmpty(UserInfo.FullName) ? string.Empty : UserInfo?.FullName?[0])
+                            </div>
+                        }
+                        else
+                        {
+                            <img src="data:image/png;base64,@Convert.ToBase64String(UserInfo.ProfilePicture)" alt="User Image" width="150px" />
+                        }
+                        <br />
+                        <div>
+                            @if (UserInfo.Gender == ClientDTO.Enums.Gender.Male)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Male" Title="Male" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Female" Title="Female" />
+                            }
+                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Title="Verified" />
+                        </div>
+                        <span class="font-weight-bold">@(UserInfo?.FullName ?? string.Empty)</span>
+                        <span class="text-black-50">@(UserInfo?.Email ?? string.Empty)</span>
+                        <span> </span>
+                    </div>
+                </div>
+
+                <div class="col-md-5 border-right">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-right">Profile Settings</h4>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12"><label class="labels">Full Name</label><input type="text" class="form-control" value="@(UserInfo?.FullName ?? string.Empty)" readonly></div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12"><label class="labels">UserName</label><input type="text" class="form-control" readonly value="@(UserInfo?.UserName ?? string.Empty)"></div>
+                            <div class="col-md-12"><label class="labels">Mobile Number</label><input type="text" class="form-control" readonly value="@(UserInfo?.PhoneNumber ?? string.Empty)"></div>
+                            <div class="col-md-12"><label class="labels">Age</label><input type="text" class="form-control" readonly value="@(UserInfo?.Age ?? 0)"></div>
+                            <div class="col-md-12"><label class="labels">Birthday</label><input type="text" class="form-control" readonly value="@(UserInfo?.Birthday.ToString("dd MMM yyyy") ?? null)"></div>
+                            <div class="col-md-12"><label class="labels">Gender</label><input type="text" class="form-control" readonly value="@(UserInfo?.Gender ?? null)"></div>
+                            <div class="col-md-12"><label class="labels">Created At</label><input type="text" class="form-control" readonly value="@(UserInfo?.CreatedAt ?? null)"></div>
+                            <div class="col-md-12"><label class="labels">Modified At</label><input type="text" class="form-control" readonly value="@(UserInfo?.ModifiedAt ?? null)"></div>
+                            <div class="col-md-12">
+                                <label class="labels">2FA</label>
+                                <MudSwitch @bind-Value="@UserInfo.RequireOTPDuringLogin" Label="@(UserInfo.RequireOTPDuringLogin ? "Active" : "Not Active")" Disabled="true" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center experience"><span>Additional Details</span></div><br>
+                        <div class="col-md-12"><label class="labels">Latest log in</label><input type="text" class="form-control" readonly value="@(UserInfo?.LastLogIn ?? null)"></div> <br>
+                        <div class="col-md-12"><label class="labels">Latest log out</label><input type="text" class="form-control" readonly value="@(UserInfo?.LastLogOut ?? null)"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

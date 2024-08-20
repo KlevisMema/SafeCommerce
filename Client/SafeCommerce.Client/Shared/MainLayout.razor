@@ -1,0 +1,83 @@
+﻿@using SafeCommerce.Client.Internal.Helpers
+@using SafeCommerce.Client.Shared.Components
+@using SafeCommerce.ClientDTO.Enums
+@inherits LayoutComponentBase
+
+<style class="apply-nonce">
+    .log-out-animation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0px 0px 0px 13px;
+    }
+
+    .mud-paper .mud-list a:hover {
+        color: #006064 !important;
+    }
+</style>
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+
+    <MudAppBar Elevation="3" Style="@($"background:{Colors.Cyan.Darken3}")" Fixed="true" Gutters="true">
+
+        <MudTooltip Text="@LogOutText" Style="@($"background:{Colors.Cyan.Darken3}")" Placement="MudBlazor.Placement.Top">
+            @if (hideLogOutBtn)
+            {
+                <div class="log-out-animation">
+                    <MudProgressCircular Color="Color.Success" Indeterminate="true" Size="Size.Small" />
+                </div>
+            }
+            else
+            {
+                <MudIconButton ClickPropagation="true" Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" OnClick="() => LogoutUser()" />
+            }
+        </MudTooltip>
+
+
+        <MudDivider DividerType="MudBlazor.DividerType.Inset" />
+        <MudSpacer />
+        @if (this.UserRole == Role.User)
+        {
+            <MudTooltip Text="@NotificationsText" Style="@($"background:{Colors.Cyan.Darken3};")" Placement="MudBlazor.Placement.Top">
+                <MudBadge Color="Color.Error" Overlap="true" Dot="true" Visible="@(RecivedInvitationsList.Count > 0)">
+                    <MudIconButton ClickPropagation="true" Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Edge="Edge.End" OnClick="() => OpenNotifications()" />
+                </MudBadge>
+                <MudPopover Open="@_open" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.BottomCenter">
+                    <MudPaper Width="200px">
+                        <MudList T="string">
+                            @foreach (var invitation in RecivedInvitationsList)
+                            {
+                                <MudListItem Text="@invitation.InvitingUserName" Dense="true" Href="/Recived-Invitations" Icon="@Icons.Material.Outlined.Shop" />
+                                <MudDivider />
+                            }
+                        </MudList>
+                    </MudPaper>
+                </MudPopover>
+            </MudTooltip>
+        }
+        <MudDivider DividerType="MudBlazor.DividerType.Middle" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+
+
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" OpenMiniOnHover="true" Elevation="8" Anchor="Anchor.Right" Variant="@DrawerVariant.Mini" Breakpoint="Breakpoint.Xl">
+
+        <NavMenu Snackbar="this._snackbar" DataRetrieved="this.DataRetrieved" />
+
+    </MudDrawer>
+
+    <CascadingValue Value="this">
+
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+
+    </CascadingValue>
+
+</MudLayout>

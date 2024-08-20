@@ -1,0 +1,83 @@
+﻿@using SafeCommerce.ClientDTO.AccountManagment
+<style class="apply-nonce">
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+    }
+
+    .mud-dialog {
+        width: 400px !important;
+    }
+
+        .mud-dialog .mud-dialog-actions {
+            padding: 8px 24px 16px 24px !important;
+        }
+
+        .mud-dialog .mud-dialog-title {
+            padding: 16px 24px 8px 24px !important;
+        }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Send" Class="mr-3 mb-n1" />
+            Invite user to shop
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudAutocomplete OpenIcon="@Icons.Material.Filled.Search"
+                                 T="ClientDto_UserSearched"
+                                 Label="Search users by username"
+                                 @bind-Value="SelectedUser"
+                                 SearchFunc="@Search"
+                                 Variant="Variant.Outlined"
+                                 ShowProgressIndicator="true"
+                                 Clearable="true"
+                                 CoerceValue="true"
+                                 Required="true"
+                                 AutoFocus="true"
+                                 Dense="true"
+                                 SelectValueOnTab=true
+                                 Context="Parent"
+                                 ToStringFunc="@(item => item.UserName)">
+
+                    <ItemTemplate>
+                        @{
+                            var user = Parent as ClientDto_UserSearched;
+                            <div>
+                                <div>@user.UserName</div>
+                            </div>
+                        }
+                    </ItemTemplate>
+
+                    <ItemSelectedTemplate>
+                        @{
+                            var user = Parent as ClientDto_UserSearched;
+                            <div>
+                                <div>@user.UserName</div>
+                            </div>
+                        }
+                    </ItemSelectedTemplate>
+
+                </MudAutocomplete>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_processing" Style="@($"background:{Colors.Cyan.Darken3}")" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="ValidateForm">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3}")" />
+                <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3}")">Sending</MudText>
+            }
+            else
+            {
+                <MudText Style="@($"color:white")">Send</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,177 @@
+﻿<style class="apply-nonce">
+    :root {
+        --primary-color: #00838F;
+        --secondary-color: #00838F;
+        --Border-color: #00838F;
+        --one-use-color: #00838F;
+        --two-use-color: #00838F;
+    }
+
+    .mud-dialog {
+        width: 500px !important;
+    }
+
+        .mud-dialog .mud-dialog-actions {
+            padding: 8px 24px 16px 24px !important;
+        }
+
+        .mud-dialog .mud-dialog-title {
+            padding: 16px 24px 8px 24px !important;
+        }
+
+    .mud-dialog-container.mud-dialog-center {
+        justify-content: unset !important;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
+            IMPORTANT!
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @{
+            @if (!AppState.GenerateSameKeys)
+            {
+                <MudText Typo="Typo.body1">
+                    <strong>Welcome!</strong>
+                    <br /><br />
+                    To ensure the highest level of security, we require you to create a <strong>secret passphrase</strong>. This passphrase is crucial for generating your unique cryptographic keys, which are used to encrypt and decrypt your data.
+                    <br /><br />
+                    <strong>Important:</strong>
+                    <ul>
+                        <li>Your passphrase must be kept <strong>private</strong> and <strong>secure</strong>.</li>
+                        <li>If you lose or forget your passphrase, you will not be able to access your encrypted data.</li>
+                        <li>Make sure to store it in a safe place.</li>
+                        <li>The passphrase will be downloaded as a file to your computer for safekeeping, but it is very important that you also remember it.</li>
+                    </ul>
+                    <br />
+                    Please enter your secret passphrase below and click on "Create Secret Passphrase" to save it securely.
+                </MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body1">
+                    <strong>It seems you are logging in from a new PC or browser.</strong>
+                    <br /><br />
+                    To regenerate your cryptographic keys, please provide your <strong>secret passphrase</strong>.
+                    <br /><br />
+                    <strong>Important:</strong>
+                    <ul>
+                        <li>Ensure your passphrase is entered correctly to regenerate your keys.</li>
+                        <li>If you are using a shared or public computer, it is recommended that your keys to be cleared upon logging out.</li>
+                    </ul>
+                </MudText>
+            }
+        }
+        <EditForm @ref="@CreateSecretPassPhraseForm" Model="dto_PassPhrase">
+            <DataAnnotationsValidator />
+            <AntiforgeryToken />
+            @if (!AppState.GenerateSameKeys)
+            {
+                <MudTextField InputType="InputType.Text" @bind-Value="dto_PassPhrase.Hint" Label="Hint"
+                              Adornment="Adornment.End"
+                              AdornmentColor="Color.Primary"
+                              Variant="Variant.Outlined"
+                              Required=true />
+            }
+
+            <MudTextField InputType="InputType.Text" @bind-Value="dto_PassPhrase.SecretPassPhrase" Label="Passphrase"
+                          Adornment="Adornment.End"
+                          AdornmentColor="Color.Primary"
+                          Variant="Variant.Outlined"
+                          Required=true
+                           />
+
+
+            @if (AppState.GenerateSameKeys)
+            {
+                <MudText>Optional* Upload encrypted file</MudText>
+
+                <MudStack Style="width: 100%">
+                    <MudFileUpload T="IBrowserFile"
+                                   @ref="@_fileUpload"
+                                   OnFilesChanged="OnInputFileChanged"
+                                   FilesChanged="FileUploaded"
+                                   Accept=".json"
+                                   MaximumFileCount="1"
+                                   InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
+                                   InputStyle="opacity:0"
+                                   tabindex="-1"
+                                   @ondrop="@ClearDragClass"
+                                   @ondragenter="@SetDragClass"
+                                   @ondragleave="@ClearDragClass"
+                                   @ondragend="@ClearDragClass">
+                        <ActivatorContent>
+                            <MudPaper Height="100px"
+                                      Outlined="true"
+                                      Class="@_dragClass">
+                                <MudText Typo="Typo.h6">
+                                    Drag and drop file here or click
+                                </MudText>
+
+                                <MudChip T="string"
+                                         Color="Color.Dark"
+                                         Text="@_fileName"
+                                         tabindex="-1" />
+
+                            </MudPaper>
+                        </ActivatorContent>
+                    </MudFileUpload>
+                    <MudToolBar Gutters="@false"
+                                Class="relative d-flex justify-end gap-4">
+                        <MudButton Color="Color.Primary"
+                                   OnClick="@OpenFilePickerAsync"
+                                   Variant="Variant.Filled">
+                            Open file picker
+                        </MudButton>
+                        <MudButton Color="Color.Error"
+                                   Disabled="@(_fileName == "")"
+                                   OnClick="@ClearAsync"
+                                   Variant="Variant.Filled">
+                            Clear
+                        </MudButton>
+                    </MudToolBar>
+                </MudStack>
+            }
+
+            <MudCheckBox @bind-Value="dto_PassPhrase.MyDevice">
+                Im logging in from my device
+            </MudCheckBox>
+
+            @if (AppState.GenerateSameKeys)
+            {
+                <MudCheckBox Value="dto_PassPhrase.ClearKeys" Label="Do you want your keys to be cleared after logged out ?" />
+            }
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_processing" Style="@($"background:{Colors.Cyan.Darken3};")" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="@(!AppState.GenerateSameKeys ? ValidateFormOfUserGivingPassPhraseFirsTime : ValidateFormOfUserHavingKeyInServerNotInBrowser)">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                if (!AppState.GenerateSameKeys)
+                {
+                    <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3};")">Creating</MudText>
+                }
+                else
+                {
+                    <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3};")">Restoring</MudText>
+                }
+            }
+            else
+            {
+                if (!AppState.GenerateSameKeys)
+                {
+                    <MudText Style="@($"color:white;")">Create Secret Passphrase</MudText>
+                }
+                else
+                {
+                    <MudText Style="@($"color:white;")">Restore my keys</MudText>
+                }
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

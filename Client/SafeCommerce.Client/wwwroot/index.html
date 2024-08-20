@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SafeShare.Client</title>
+    <base href="/" />
+    <link id="bootstrap-css" href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link id="app-css" href="css/app.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link id="google-fonts" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link id="mudblazor-css" href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="loader"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script>
+        function registerScreenWidthChanged(dotnetHelper) {
+            window.onScreenWidthChanged = function (width) {
+                dotnetHelper.invokeMethodAsync('UpdateScreenWidth', width);
+            };
+        }
+
+        window.onScreenWidthChanged = null;
+
+        window.getScreenWidth = function () {
+            return window.innerWidth;
+        };
+
+        window.addEventListener("resize", function () {
+            var screenWidth = window.innerWidth;
+            if (window.onScreenWidthChanged)
+                window.onScreenWidthChanged(screenWidth);
+        });
+
+        async function generateAndStoreKeys(password, userId, myDevice) {
+            const encryptionKeys = await generateEncryptionKeyPair(password, userId);
+
+            if (!encryptionKeys) {
+                console.error("Failed to generate encryption keys.");
+                return false;
+            }
+
+            const signingKeys = await generateSigningKeyPair(password, userId);
+
+            if (!signingKeys) {
+                console.error("Failed to generate signing keys.");
+                return false;
+            }
+
+            const hashedEncryptionPublicKey = hashData(nacl.util.decodeBase64(encryptionKeys.publicKey));
+
+            const signature = signData(hashedEncryptionPublicKey, nacl.util.decodeBase64(signingKeys.privateKey));
+            const signatureBase64 = nacl.util.encodeBase64(signature);
+
+            try {
+                await saveUserKeysInDatabase(userId, encryptionKeys, myDevice, password, signingKeys, signatureBase64);
+                return true;
+            } catch (error) {
+                console.error("Error saving keys to the database:", error);
+                return false;
+            }
+        }
+
+        async function getPublicKey(userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (obj === null || obj === undefined) {
+                return null;
+            }
+
+            return obj.keyPair.publicKey;
+        }
+
+        async function getPrivateKey(userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (obj === null || obj === undefined) {
+                return null;
+            }
+
+            return obj.keyPair.privateKey;
+        }
+
+        async function getSignature(userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (obj === null || obj === undefined) {
+                return null;
+            }
+
+            return obj.signature;
+        }
+
+        async function getSigningPublicKey(userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (obj === null || obj === undefined) {
+                return null;
+            }
+
+            return obj.keyPairSignature.publicKey;
+        }
+
+        async function getSigningPrivateKey(userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (obj === null || obj === undefined) {
+                return null;
+            }
+
+            return obj.keyPairSignature.privateKey;
+        }
+
+        async function encryptShopData(shop, userId) {
+            const data = await getUserKeyPairFromDatabase(userId);
+
+
+            if (!data) {
+                throw new Error('Key pair not found for the user.');
+            }
+
+            const symmetricKey = await generateSymmetricKey();
+
+            const nonce = crypto.getRandomValues(new Uint8Array(12));
+
+            const encryptedName = await encryptDataWithSymmetricKey(shop.name, symmetricKey, nonce);
+            const encryptedDescription = await encryptDataWithSymmetricKey(shop.description, symmetricKey, nonce);
+
+            const encryptedSymmetricKey = await encryptSymmetricKeyForUser(symmetricKey, data.keyPair.publicKey, data.keyPair.privateKey);
+
+            const signingKeys = await generateSigningKeyPairWithNoSeed();
+
+            const hashedSecretKey = hashData(nacl.util.decodeBase64(symmetricKey));
+
+            const signature = signData(hashedSecretKey, nacl.util.decodeBase64(signingKeys.privateKey));
+            const signatureBase64 = nacl.util.encodeBase64(signature);
+
+            return {
+                Name: encryptedName.encryptedData,
+                Description: encryptedDescription.encryptedData,
+                DataNonce: nacl.util.encodeBase64(nonce),
+                EncryptedKeyNonce: encryptedSymmetricKey.nonceBase64,
+                EncryptedSymmetricKey: encryptedSymmetricKey.encryptedSymmetricKeyBase64,
+                SignatureOfKey: signatureBase64,
+                SigningPublicKey: signingKeys.publicKey,
+                SigningPrivateKey: signingKeys.privateKey
+            }
+        }
+
+        async function updateShop(shopToBeUpdated, symmetricKey, nonce, shopId, userId) {
+            var shop = await getShopKeyPairFromDatabase(shopId);
+            const userKeys = await getUserKeyPairFromDatabase(userId);
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(shop.encryptedSymmetricKey, userKeys.keyPair.privateKey, userKeys.keyPair.publicKey, shop.keyNonce);
+
+            const encryptedName = await encryptDataWithSymmetricKey(shopToBeUpdated.name, symmetricKeyBase64, nacl.util.decodeBase64(shop.dataNonce));
+            const encryptedDescription = await encryptDataWithSymmetricKey(shopToBeUpdated.description, symmetricKeyBase64, nacl.util.decodeBase64(shop.dataNonce));
+
+            return {
+                Name: encryptedName.encryptedData,
+                Description: encryptedDescription.encryptedData,
+                DataNonce: nonce,
+                EncryptedKeyNonce: shop.keyNonce,
+                EncryptedSymmetricKey: shop.encryptedSymmetricKey,
+                SignatureOfKey: shop.signature,
+                SigningPublicKey: shop.relatedKeys.SigningPublicKey,
+            }
+        }
+
+        async function decryptMyShopData(encryptedShop, userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (!obj) {
+                throw new Error('Key pair not found.');
+            }
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(encryptedShop.encryptedKey, obj.keyPair.privateKey, obj.keyPair.publicKey, encryptedShop.encryptedKeyNonce);
+
+            const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
+
+            const nonce = nacl.util.decodeBase64(encryptedShop.dataNonce);
+
+            const name = await decryptDataWithSymmetricKey(encryptedShop.name, symmetricKey, nonce);
+            const description = await decryptDataWithSymmetricKey(encryptedShop.description, symmetricKey, nonce);
+
+            return {
+                ShopId: encryptedShop.shopId,
+                Name: name,
+                Description: description,
+                OwnerId: encryptedShop.ownerId,
+                OwnerName: encryptedShop.ownerName,
+                EncryptedKey: encryptedShop.encryptedKey,
+                EncryptedKeyNonce: encryptedShop.encryptedKeyNonce,
+                DataNonce: encryptedShop.dataNonce,
+                MakePublic: encryptedShop.makePublic,
+                IsPublic: encryptedShop.isPublic,
+            };
+        }
+
+        async function decryptShopData(encryptedShop, userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (!obj) {
+                throw new Error('Key pair not found.');
+            }
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(encryptedShop.encryptedKey, obj.keyPair.privateKey, encryptedShop.ownerPublicKey, encryptedShop.encryptedKeyNonce);
+
+            const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
+
+            const nonce = nacl.util.decodeBase64(encryptedShop.dataNonce);
+
+            const name = await decryptDataWithSymmetricKey(encryptedShop.name, symmetricKey, nonce);
+            const description = await decryptDataWithSymmetricKey(encryptedShop.description, symmetricKey, nonce);
+
+            return {
+                ShopId: encryptedShop.shopId,
+                Name: name,
+                Description: description,
+                OwnerId: encryptedShop.ownerId,
+                OwnerName: encryptedShop.ownerName,
+                EncryptedKey: encryptedShop.encryptedKey,
+                EncryptedKeyNonce: encryptedShop.encryptedKeyNonce,
+                DataNonce: encryptedShop.dataNonce,
+                MakePublic: encryptedShop.makePublic,
+                IsPublic: encryptedShop.isPublic,
+            };
+        }
+
+        async function decryptSentInvitation(invitationShop, userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (!obj) {
+                throw new Error('Key pair not found.');
+            }
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(invitationShop.encryptedKey, obj.keyPair.privateKey, obj.keyPair.publicKey, invitationShop.encryptedKeyNonce);
+
+            const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
+
+            const nonce = nacl.util.decodeBase64(invitationShop.dataNonce);
+
+            const name = await decryptDataWithSymmetricKey(invitationShop.shopName, symmetricKey, nonce);
+
+            return {
+                User: invitationShop.user,
+                ShopName: name,
+                IsPublic: invitationShop.isPublic,
+                EncryptedKey: invitationShop.encryptedKey,
+                EncryptedKeyNonce: invitationShop.encryptedKeyNonce,
+                DataNonce: invitationShop.dataNonce,
+                InvitationTimeSend: invitationShop.invitationTimeSend,
+                InvitationStatus: invitationShop.invitationStatus,
+                InvitationId: invitationShop.invitationId,
+                InvitedUserId: invitationShop.invitedUserId,
+                ShopId: invitationShop.shopId,
+            };
+        }
+
+        async function decryptAndSaveKeyPair(encryptedKeyPairJson, password, myDevice, userId) {
+            try {
+                const encryptedKeyPair = JSON.parse(encryptedKeyPairJson);
+
+                const decryptedKeyPairBuffer = await decryptEncryptedFile(
+                    { encryptedData: encryptedKeyPair.encryptedKeyPair, iv: encryptedKeyPair.keyPairIv },
+                    password
+                );
+                const decryptedKeyPairJson = new TextDecoder().decode(decryptedKeyPairBuffer);
+                const keyPair = JSON.parse(decryptedKeyPairJson);
+
+                const decryptedKeyPairSignatureBuffer = await decryptEncryptedFile(
+                    { encryptedData: encryptedKeyPair.encryptedKeyPairSignature, iv: encryptedKeyPair.keyPairSignatureIv },
+                    password
+                );
+                const decryptedKeyPairSignatureJson = new TextDecoder().decode(decryptedKeyPairSignatureBuffer);
+                const keyPairSignature = JSON.parse(decryptedKeyPairSignatureJson);
+
+                const decryptedSignatureBuffer = await decryptEncryptedFile(
+                    { encryptedData: encryptedKeyPair.encryptedSignature, iv: encryptedKeyPair.signatureIv },
+                    password
+                );
+                var signature = new TextDecoder().decode(decryptedSignatureBuffer);
+
+                if (signature.startsWith('"') && signature.endsWith('"')) {
+                    signature = signature.slice(1, -1);
+                }
+
+                await saveUserKeysInDatabase(userId, keyPair, myDevice, password, keyPairSignature, signature);
+
+                return true;
+            } catch (error) {
+                console.error("Decryption failed: ", error);
+                return false;
+            }
+        }
+
+        function verifyPublicKey(senderPublicKey, senderPublicKeySignature, senderSignature) {
+            const hashedPublicKey = hashData(nacl.util.decodeBase64(senderPublicKey));
+
+            return verifySignature(hashedPublicKey, nacl.util.decodeBase64(senderSignature), nacl.util.decodeBase64(senderPublicKeySignature));
+        }
+
+        async function deleteKeyFromDatabase(userId) {
+            await deleteUserKeyPairFromDatabase(userId);
+        }
+
+        async function saveShopKeysData(shopData) {
+            await saveShopKeysInDatabase(
+                shopData.shopId,
+                shopData.ownerId,
+                shopData.encryptedSymmetricKey,
+                shopData.signatureOfKey,
+                {
+                    SigningPublicKey: shopData.signingPublicKey,
+                    SigningPrivateKey: shopData.signingPrivateKey
+                },
+                shopData.dataNonce,
+                shopData.encryptedKeyNonce
+            );
+        }
+
+        async function deleteShopConfirm(shopId) {
+            await deleteShopKeyPairFromDatabase(shopId);
+        }
+
+        async function inviteUserToShop(recipientPublicKeyBase64, userId, shopId) {
+            const shop = await getShopKeyPairFromDatabase(shopId);
+            const user = await getUserKeyPairFromDatabase(userId);
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(shop.encryptedSymmetricKey, user.keyPair.privateKey, user.keyPair.publicKey, shop.keyNonce);
+            const encryptedSymmetricKey = await encryptSymmetricKeyForUser(symmetricKeyBase64, recipientPublicKeyBase64, user.keyPair.privateKey);
+
+            return {
+                EncryptedKeyNonce: encryptedSymmetricKey.nonceBase64,
+                EncryptedKey: encryptedSymmetricKey.encryptedSymmetricKeyBase64
+            }
+        }
+    </script>
+
+    <script src="js/tweetnacl-js-1.0.3/nacl-fast.js" id="tweetnacl-fast"></script>
+    <script src="js/tweetnacl-util-js-master/nacl-util.js" id="tweetnacl-util"></script>
+    <script src="js/crypto.js" id="crypto"></script>
+    <script src="js/dbOperations.js" id="dbOperations"></script>
+    <!-- <script src="js/disableDevTools.js" id="disableDevTools"></script>
+    <script src="js/detectDevTools.js" id="detectDevTools"></script> -->
+    <script src="_framework/blazor.webassembly.js" id="blazor"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js" id="MudBlazor"></script>
+</body>
+
+</html>

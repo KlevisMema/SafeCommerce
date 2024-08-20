@@ -1,0 +1,363 @@
+﻿@using SafeCommerce.Client.Shared.Forms.Account
+@using SafeCommerce.ClientDTO.Enums
+
+<style class="apply-nonce">
+    :root {
+        --mud-palette-primary: #00838F;
+    }
+
+    @@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f0faff;
+    }
+
+    .wrapper {
+        width: 600px !important;
+        position: relative;
+        max-width: 500px;
+        width: 100%;
+        border-radius: 12px;
+        padding: 20px 30px 120px;
+        background: #00838F;
+        box-shadow: 0 5px 10px rgba( 0, 0, 0, 0.1 );
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form.login {
+        position: absolute;
+        left: 50%;
+        bottom: -86%;
+        transform: translateX( -50% );
+        width: calc( 100% + 220px );
+        padding: 20px 140px;
+        border-radius: 50%;
+        height: 100%;
+        background: #fff;
+        transition: all 0.6s ease;
+    }
+
+    .wrapper.active
+    .form.login {
+        bottom: -15%;
+        border-radius: 35%;
+        box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .signup {
+        width: 600px;
+    }
+
+    .form
+    header {
+        font-size: 30px;
+        text-align: center;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .form.login
+    header {
+        color: #333;
+        opacity: 0.6;
+    }
+
+    .wrapper.active
+    .form.login
+    header {
+        opacity: 1;
+    }
+
+    .wrapper.active
+    .signup
+    header {
+        opacity: 0.6;
+    }
+
+    .wrapper
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    form
+    input,
+    .mudField {
+        height: 40px;
+        outline: none;
+        border: none;
+        padding: 0 15px;
+        font-size: 16px;
+        font-weight: 400;
+        color: #333;
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    .form.login
+    input,
+    .mudField {
+        border: 1px solid #aaa;
+    }
+
+        .form.login
+        input:focus,
+        .mudField {
+            box-shadow: 0 1px 0 #ddd;
+        }
+
+    form
+    .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .checkbox
+    input[type="checkbox"] {
+        height: 16px;
+        width: 16px;
+        accent-color: #fff;
+        cursor: pointer;
+    }
+
+    form
+    .checkbox
+    label {
+        cursor: pointer;
+        color: #fff;
+    }
+
+    form a {
+        color: #333;
+        text-decoration: none;
+    }
+
+        form
+        a:hover {
+            text-decoration: underline;
+        }
+
+    form
+    input[type="submit"],
+    .mudSubmitButton {
+        margin-top: 15px;
+        padding: 15px;
+        font-size: 18px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .form.login
+    input[type="submit"],
+    .mudSubmitButton {
+        background: #00838F;
+        color: #fff;
+        border: none;
+        transition: all ease-in-out 0.2s;
+        margin-top: unset !important;
+        padding: 10px !important;
+    }
+
+    .mudRegisterSubmitButton {
+        background: #fff;
+        color: #00838F;
+    }
+
+        .mudRegisterSubmitButton:hover {
+            color: white;
+        }
+
+    .register-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .register-group-date {
+        justify-content: space-evenly;
+    }
+
+    .SelectGender .mud-input-adornment svg,
+    .SelectGender .mud-select .mud-select-input .mud-input-slot,
+    .SelectGender .mud-input-label,
+    .SelectGender .mud-select .mud-select-input,
+    .SelectGender .mud-input {
+        color: white !important;
+    }
+
+    .SelectGender .SelectGenderItem {
+        color: white !important;
+    }
+
+    div.mud-input-slot.mud-input-root.mud-input-root-text.mud-input-root-adorned-end.mud-select-input,
+    {
+        color: white !important;
+    }
+
+    .forgot-passwd {
+        cursor: pointer;
+        transition: all ease-in-out 0.1s;
+        text-decoration: none !important
+    }
+
+        .forgot-passwd:hover {
+            color: #00838F;
+        }
+
+    .colorChange {
+        color: white !important;
+    }
+
+    .mud-input.mud-input-underline:after{
+        border-bottom: 2px solid #26C6DA !important;
+    }
+
+    .mud-selected-item {
+        color: #00838F !important;
+    }
+</style>
+
+<MudSnackbarProvider />
+<MudDialogProvider />
+<MudPopoverProvider />
+
+<section class="wrapper" @onclick="(() => ToggleForms())">
+
+    <div class="form signup">
+
+        <header>Sign Up</header>
+
+        <EditForm @ref="registerForm" Model="@clientDto_Register" class="register">
+
+            <DataAnnotationsValidator />
+
+            <div class="register-group">
+                <InputText @bind-Value="@clientDto_Register.FullName" placeholder="Full name" />
+                <InputText @bind-Value="@clientDto_Register.Username" placeholder="Username" />
+            </div>
+
+            <div class="register-group register-group-date">
+                <InputText @bind-Value="@clientDto_Register.Email" placeholder="Email address" />
+                <InputDate @bind-Value="@clientDto_Register.Birthday" placeholder="Birthaday" style="width:50%" />
+            </div>
+
+            <div class="register-group">
+                <InputText @bind-Value="@clientDto_Register.PhoneNumber" placeholder="Phone Number" />
+
+                <MudSelect 
+                    T="Gender" 
+                    AnchorOrigin="Origin.TopCenter" 
+                    @bind-Value="@clientDto_Register.Gender" 
+                    Label="Select your gender" 
+                    Class="SelectGender" 
+                    Style="@($"color:{Colors.Cyan.Darken3};")"
+                >
+                    <MudSelectItem T="Gender" Value="@(Gender.Male)" Class="SelectGenderItem">Male</MudSelectItem>
+                    <MudSelectItem T="Gender" Value="@(Gender.Female)" Class="SelectGenderItem">Female</MudSelectItem>
+                </MudSelect>
+
+            </div>
+
+            <div class="register-group">
+                <InputText type="password" @bind-Value="@clientDto_Register.Password" placeholder="Password" required />
+                <InputText type="password" @bind-Value="@clientDto_Register.ConfirmPassword" placeholder="Confirm Password" required />
+            </div>
+
+            <div class="register-group">
+
+                <div class="checkbox">
+                    <InputCheckbox @bind-Value="@clientDto_Register.TwoFA" placeholder="Enable2FA" id="Enable2FA" />
+                    <label for="Enable2FA">2 Factor Authentication</label>
+                </div>
+
+            </div>
+
+            <MudButton Disabled="@_processingRegistering" OnClick="(() => ValidateRegisterForm())" Variant="Variant.Filled" Color="Color.Transparent" Class="mudSubmitButton mudRegisterSubmitButton position-relative">
+
+                @if (_processingRegistering)
+                {
+                    <MudProgressCircular Class="ms-n1 colorChange" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2 colorChange" Style="@($"color:{Colors.Cyan.Darken3}")">Registering</MudText>
+                }
+                else
+                {
+                    <MudText Style="@($"color:{Colors.Cyan.Darken3}")">REGISTER</MudText>
+                }
+
+            </MudButton>
+
+        </EditForm>
+
+    </div>
+
+    <div class="form login">
+
+        <header>Log In</header>
+
+        <EditForm @ref="loginForm" Model="@clientDto_Login">
+
+            <DataAnnotationsValidator />
+
+            <input type="text" @bind-value="@clientDto_Login.Email" placeholder="Email address" required />
+            <input type="password" @bind-value="@clientDto_Login.Password" placeholder="Password" required />
+
+            <a @onclick="() => NavigateToForgotPasswordPage()" class="forgot-passwd">Forgot password?</a>
+
+            <MudButton Disabled="@_processing" OnClick="(() => ValidateForm())" Variant="Variant.Filled" Style="@($"background:{Colors.Cyan.Darken3};")" Class="mudSubmitButton position-relative">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                    <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3}")">Logging in</MudText>
+                }
+                else
+                {
+                    <MudText>LOG IN</MudText>
+                }
+            </MudButton>
+
+            @if (showActivateAccountRequestBtn)
+            {
+                <MudButton Href="/Profile/Activate" Variant="Variant.Outlined" Style="@($"color:{Colors.Cyan.Darken3};")" Class="position-relative">
+                    <MudText>Activate Account Request</MudText>
+                </MudButton>
+            }
+
+        </EditForm>
+
+    </div>
+
+    <script>
+        function LoginPage() {
+            const wrapper = document.querySelector(".wrapper"),
+                signupHeader = document.querySelector(".signup header"),
+                loginHeader = document.querySelector(".login header");
+
+            loginHeader.addEventListener("click", () => {
+                wrapper.classList.add("active");
+            });
+            signupHeader.addEventListener("click", () => {
+                wrapper.classList.remove("active");
+            });
+        }
+    </script>
+
+</section>

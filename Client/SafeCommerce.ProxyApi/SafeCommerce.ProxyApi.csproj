@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Server\SafeCommerce.DataTransormObject\SafeCommerce.DataTransormObject.csproj" />
+    <ProjectReference Include="..\..\Server\SafeCommerce.Security\SafeCommerce.Security.csproj" />
+    <ProjectReference Include="..\..\Server\SafeCommerce.Utilities\SafeCommerce.Utilities.csproj" />
+    <ProjectReference Include="..\..\Shared\SafeCommerce.ClientServerShared\SafeCommerce.ClientServerShared.csproj" />
+    <ProjectReference Include="..\SafeCommerce.ClientUtilities\SafeCommerce.ClientUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logs\" />
+  </ItemGroup>
+
+</Project>

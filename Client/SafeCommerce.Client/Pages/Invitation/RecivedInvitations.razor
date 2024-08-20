@@ -1,0 +1,127 @@
+﻿@page "/Recived-Invitations"
+@using SafeCommerce.ClientDTO.Enums
+
+<style class="apply-nonce">
+    :root {
+        --background-color1: #fafaff;
+        --background-color2: #ffffff;
+        --background-color3: #ededed;
+        --background-color4: #cad7fda4;
+        --primary-color: #00838F;
+        --secondary-color: #00838F;
+        --Border-color: #00838F;
+        --one-use-color: #00838F;
+        --two-use-color: #00838F;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .sent-invitation-details {
+        display: flex;
+        justify-content: flex-start;
+        padding: 8px 0;
+    }
+
+    .label {
+        font-weight: bold;
+        margin-right: 10px;
+        color: #555;
+    }
+
+    .value {
+        color: #333;
+    }
+
+    .sent-invitations-container {
+        padding: 20px;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .mud-expand-panel-header {
+        background: #00838F;
+        color: white;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .no-invitations-message {
+        text-align: center;
+        margin: 20px;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        color: #777;
+    }
+
+    .sent-invitation-actions {
+        gap: 10px;
+        display: flex;
+    }
+
+    .colorChange {
+        color: white !important;
+    }
+</style>
+
+<div class="sent-invitations-container">
+    <MudExpansionPanels MultiExpansion="true" Elevation="5" Square="false">
+        @if (RecivedInvitationsList is null || RecivedInvitationsList.Count == 0)
+        {
+            <p class="no-invitations-message">No invitations have been recived.</p>
+        }
+        else
+        {
+            @foreach (var invitation in RecivedInvitationsList)
+            {
+                <MudExpansionPanel Text="@invitation.InvitingUserName" MaxHeight="250" Icon="@Icons.Material.Filled.ExpandMore">
+                    <div class="sent-invitation-details">
+                        <div class="label">Status:</div>
+                        <div class="value">@invitation.InvitationStatus.ToString()</div>
+                    </div>
+                    <div class="sent-invitation-details">
+                        <div class="label">Recived from user:</div>
+                        <div class="value">@invitation.InvitingUserName</div>
+                    </div>
+                    <div class="sent-invitation-actions">
+                        @if (invitation.InvitationStatus == InvitationStatus.Pending)
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ThumbUp" @onclick="() => AcceptInvitation(invitation)">
+
+                                @if (_processingAcceptInvitation)
+                                {
+                                    <MudProgressCircular Class="ms-n1 colorChange" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2 colorChange">Accepting</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Accept</MudText>
+                                }
+
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Remove" @onclick="() => RejectInvitation(invitation)">
+
+                                @if (_processingRejectInvitation)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Color="Color.Error" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2" Color="Color.Error">Rejecting</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Reject</MudText>
+                                }
+
+                            </MudButton>
+                        }
+                    </div>
+                </MudExpansionPanel>
+            }
+        }
+    </MudExpansionPanels>
+</div>

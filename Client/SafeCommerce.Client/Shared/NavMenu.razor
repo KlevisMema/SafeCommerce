@@ -1,0 +1,114 @@
+﻿@using System.Text;
+@using SafeCommerce.Client.Shared.Forms;
+@using SafeCommerce.Client.Internal.Helpers;
+@using SafeCommerce.ClientDTO.Enums;
+
+<style class="apply-nonce">
+    .my-custom-class {
+        backdrop-filter: blur(10px);
+    }
+
+    .mud-skeleton-nav-btn {
+        display: flex;
+        padding: 8px 16px 8px 16px;
+        gap: 20px;
+    }
+
+    .mud-skeleton-nav-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled),
+    .mud-navmenu.mud-navmenu-primary .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon {
+        color: #00838F !important;
+    }
+
+    .mud-navmenu.mud-navmenu-primary .mud-nav-link-expand-icon.mud-transform {
+        fill: #00838F !important;
+    }
+
+    .mud-nav-link:hover:not(.mud-nav-link-disabled) {
+        color: #00838F !important;
+    }
+</style>
+
+<MudNavMenu Bordered="true" Class="mud-width-full" Color="Color.Primary">
+
+    @if (!DataRetrieved)
+    {
+        <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+    }
+    else
+    {
+        <MudNavLink Match="NavLinkMatch.All"
+                    ForceLoad="true"
+                    Href="/Dashboard"
+                    Icon="@Icons.Material.Filled.Dashboard"
+                    Style="height: var(--mud-appbar-height);">Dashboard</MudNavLink>
+    }
+
+    <br />
+
+    @if (!DataRetrieved)
+    {
+        <div class="mud-skeleton-nav-links">
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+        </div>
+    }
+    else
+    {
+        <MudNavGroup Title="Profile" Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Expanded="true">
+            <MudNavLink Match="NavLinkMatch.All" Href="/Profile" Icon="@Icons.Material.Filled.RemoveRedEye" IconColor="Color.Inherit">See Profile</MudNavLink>
+            <MudNavLink Match="NavLinkMatch.All" Href="/Profile/Edit" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Profile</MudNavLink>
+            <MudNavLink OnClick="OpenPopUpChangeEmailForm" Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Email</MudNavLink>
+            <MudNavLink OnClick="OpenPopUpChangePasswordForm" Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Password</MudNavLink>
+            <MudNavLink OnClick="OpenPopUpDeactivateAccountForm" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit">Deactivate Account</MudNavLink>
+        </MudNavGroup>
+    }
+
+    <MudDivider Class="my-2" />
+
+    @if (!DataRetrieved)
+    {
+        <div class="mud-skeleton-nav-btn">
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="40px" Width="40px" />
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="40px" Width="40px" />
+        </div>
+
+        <div class="mud-skeleton-nav-links">
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+        </div>
+    }
+    else
+    {
+        if (this.UserRole == Role.User)
+        {
+            <MudNavGroup Title="Shop" Icon="@Icons.Material.Filled.Shop" IconColor="Color.Inherit" Expanded="false">
+                <MudNavLink Match="NavLinkMatch.All" Href="/Shops" Icon="@Icons.Material.Filled.List" IconColor="Color.Inherit">See Shops</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Create-Shop" Icon="@Icons.Material.Filled.Add" IconColor="Color.Inherit">Create Shop</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Shops-Management" Icon="@Icons.Material.Filled.ManageHistory" IconColor="Color.Inherit">Shops Management</MudNavLink>
+
+            </MudNavGroup>
+
+            <MudNavGroup Title="Item" Icon="@Icons.Material.Filled.ShoppingBag" IconColor="Color.Inherit" Expanded="false">
+                <MudNavLink Match="NavLinkMatch.All" Href="/Items" Icon="@Icons.Material.Filled.List" IconColor="Color.Inherit">See Items</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Create-Item" Icon="@Icons.Material.Filled.Add" IconColor="Color.Inherit">Create Item</MudNavLink>
+            </MudNavGroup>
+
+            <MudNavGroup Title="Invitations" Icon="@Icons.Material.Filled.InsertInvitation" IconColor="Color.Inherit" Expanded="false">
+                <MudNavLink Match="NavLinkMatch.All" Href="/Sent-Invitations" Icon="@Icons.Material.Filled.Send" IconColor="Color.Inherit">Sent Invitations</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Recived-Invitations" Icon="@Icons.Material.Filled.CallReceived" IconColor="Color.Inherit">Recived Invitations</MudNavLink>
+            </MudNavGroup>
+        }
+    }
+
+</MudNavMenu>

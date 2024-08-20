@@ -1,0 +1,44 @@
+﻿@page "/Profile/Activate/Confirmation"
+@layout GeneralLayout
+
+<PageTitle>Safe Commerce - Activate Account Confirmation</PageTitle>
+
+
+
+<style class="apply-nonce">
+    .activateAccountContainer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .bePatient {
+        font-size: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
+<MudSnackbarProvider />
+
+<MudOverlay @bind-Visible="isVisible" DarkBackground="true" AutoClose="false" ZIndex="999999">
+    <div class="activateAccountContainer">
+        <MudText Color="Color.Primary" Class="bePatient">Please be patient, your account is getting activated</MudText>
+        <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" Style="height:70px;width:70px;" />
+    </div>
+</MudOverlay>
+
+@if (!isVisible)
+{
+    <div class="MudPaperWrapper">
+        <MudPaper Class="pa-16 ma-2" Outlined="false" Square="true" Elevation="20">
+            <MudText Color="Color.Primary" Class="bePatient">@ActivateAccountMessage</MudText>
+                @if (!buttonDisabled)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RedirectToRequestAccountConfirmation">Redirect me</MudButton>
+            }
+        </MudPaper>
+    </div>
+}
