@@ -89,10 +89,10 @@ public class ItemProxyController(
 
     #region Post
     [HttpPost(Route_ItemRoutes.ProxyCreateItem)]
-    public async Task<ActionResult<Util_GenericResponse<DTO_Item>>>
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
     CreateItem
     (
-        [FromForm] DTO_CreateItem createItemDto
+        [FromBody] DTO_CreateItem createItemDto
     )
     {
         if (!ModelState.IsValid)
@@ -108,7 +108,7 @@ public class ItemProxyController(
             createItemDto
         );
 
-        return Util_GenericControllerResponse<DTO_Item>.ControllerResponse(result);
+        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
     [HttpPost(Route_ItemRoutes.ProxyShareItem)]

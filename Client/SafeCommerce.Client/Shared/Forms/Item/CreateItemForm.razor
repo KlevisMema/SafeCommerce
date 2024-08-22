@@ -1,1 +1,211 @@
-﻿
+﻿@using SafeCommerce.ClientDTO.Enums
+@using SafeCommerce.ClientDTO.Shop
+
+<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .overContainer {
+        padding: 10px 30px 10px 30px;
+    }
+
+    .privateShopDropDownValue {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .SelectShopClass .mud-input-root-adorned-end {
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .customShadowClass {
+        box-shadow: unset !important;
+    }
+
+    .selectedUser {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .selectedUserContainer{
+        background: #00838F;
+        color: white;
+    }
+</style>
+
+<div class="overContainer">
+    <EditForm Model="@CreateItem" @ref="CreateItemFormContext">
+        <DataAnnotationsValidator />
+        <MudItem>
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Item name"
+                                  HelperText="Enter item name"
+                                  @bind-Value="CreateItem.Name"
+                                  Adornment="Adornment.End"
+                                  Required=true />
+
+                    <br />
+
+                    <MudNumericField @bind-Value="CreateItem.Price"
+                                     Label="Price"
+                                     Variant="Variant.Outlined"
+                                     Min="0"
+                                     HelperText="Enter a price" />
+
+                    <br />
+
+                    <MudTextField Label="Description"
+                                  HelperText="Enter item description"
+                                  Class="mt-3"
+                                  Adornment="Adornment.End"
+                                  Required=true
+                                  Variant="Variant.Outlined"
+                                  Lines="5"
+                                  @bind-Value="CreateItem.Description"
+                                  InputType="InputType.Text" />
+
+                    <br />
+
+                    <MudFileUpload T="IBrowserFile" Accept=".jpg, .png, .jepg" MaximumFileCount="1" AppendMultipleFiles="false" FilesChanged="UploadFile">
+                        <ActivatorContent>
+                            <MudFab Color="Color.Secondary"
+                                    StartIcon="@Icons.Material.Filled.Image"
+                                    Label="Load picture" />
+                        </ActivatorContent>
+                    </MudFileUpload>
+
+                    <br />
+
+                    @if (!string.IsNullOrEmpty(imagePreview))
+                    {
+                        <MudImage Fluid="true" Src="@imagePreview" Class="rounded-lg" Elevation="5" Width="250" />
+                    }
+
+                    <br />
+                    <br />
+
+                    <MudSelect T="ItemShareOption" @bind-Value="CreateItem.ItemShareOption"
+                               Label="Select Share Option" HelperText="Choose how to share this item"
+                               Placeholder="Please Select"
+                               AdornmentIcon="@SelectOptionIcon"
+                               AdornmentColor="Color.Primary" SelectedValuesChanged="ValueSelected">
+                        <MudSelectItem Value="ItemShareOption.Shop" Ripple="true">Share this item to a shop</MudSelectItem>
+                        <MudSelectItem Value="ItemShareOption.ToUser" Ripple="true">Share this item to a specific user</MudSelectItem>
+                        <MudSelectItem Value="ItemShareOption.Everybody" Ripple="true">Share this item to everyone</MudSelectItem>
+                    </MudSelect>
+
+                    <br />
+
+                    <MudPaper Class="customShadowClass" Style="@("display: " + visibilityClassForShop)">
+
+                        <MudSelect @bind-Value="CreateItem.ShopId"
+                                   Label="Choose a shop" HelperText="Choose a shop to share the item"
+                                   Placeholder="Please Select"
+                                   AdornmentIcon="@Icons.Material.Filled.Shop"
+                                   AdornmentColor="Color.Primary" Class="SelectShopClass"
+                                   Disabled="@(CreateItem.ItemShareOption ==  ItemShareOption.ToUser || CreateItem.ItemShareOption ==  ItemShareOption.Everybody)">
+
+                            @foreach (var shop in ListShops)
+                            {
+                                <MudSelectItem T="Guid" Value="@shop.ShopId" Ripple="true">
+                                    <div class="privateShopDropDownValue">
+                                        @shop.Name
+                                        <div>
+                                            @if (!shop.IsPublic)
+                                            {
+                                                <MudChip T="string" Color="Color.Primary">Private</MudChip>
+
+                                                <MudTooltip Text="Nr. Members" Arrow="true">
+                                                    <MudChip T="string" Color="Color.Tertiary">
+                                                        <MudIcon Icon="@Icons.Material.Outlined.Countertops" />
+                                                        @shop.MemberCount
+                                                    </MudChip>
+                                                </MudTooltip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip T="string" Color="Color.Primary">Public</MudChip>
+                                            }
+
+                                            <MudTooltip Text="Created at" Arrow="true">
+                                                <MudChip T="string" Color="Color.Secondary">
+                                                    <MudIcon Icon="@Icons.Material.Outlined.CalendarMonth" />@shop.CreatedAt
+                                                </MudChip>
+                                            </MudTooltip>
+
+                                            <MudTooltip Text="Nr. Items" Arrow="true">
+                                                <MudChip T="string" Color="Color.Surface">
+                                                    <MudIcon Icon="@Icons.Material.Outlined.ProductionQuantityLimits" />
+                                                    @shop.ItemCount
+                                                </MudChip>
+                                            </MudTooltip>
+
+                                        </div>
+                                    </div>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudPaper>
+
+                    @if (SelectedUser is not null)
+                    {
+                        <MudGrid>
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudCard Class="shop-card private-shop-card selectedUserContainer">
+                                    <MudCardContent Class="selectedUser">
+                                        <MudText Typo="Typo.h6">@SelectedUser.UserName</MudText>
+                                        @if (SelectedUser.UserImage is not null && SelectedUser.UserImage.Length > 0)
+                                        {
+                                            <MudAvatar>
+                                                <MudImage Src="@("data:image/*;base64," + Convert.ToBase64String(SelectedUser.UserImage))" Elevation="3" />
+                                            </MudAvatar>
+                                        }
+
+                                        else
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" />
+                                        }
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+                    }
+
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Style="@($"background:{Colors.Cyan.Darken3};")"
+                               Class="ml-auto"
+                               Disabled="@_processing"
+                               OnClick="ValidateForm">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                            <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3}")">Creating</MudText>
+                        }
+                        else
+                        {
+                            <MudText Style="@($"color:white")">Create</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </EditForm>
+</div>

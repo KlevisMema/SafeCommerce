@@ -1,20 +1,11 @@
 ﻿using SafeCommerce.ClientDTO.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace SafeCommerce.ClientDTO.Item;
 
-public class ClientDto_CreateItem
+public class ClientDto_CreateItemWithAllKeys
 {
-    [Required]
-    [StringLength(100)]
     public string Name { get; set; } = string.Empty;
-
-    [Required]
-    [StringLength(400)]
     public string Description { get; set; } = string.Empty;
-
-    [Required]
-    [Range(0, 100000)]
     public decimal Price { get; set; }
     public string EncryptedPrice { get; set; } = string.Empty;
     public byte[]? Picture { get; set; }
@@ -23,11 +14,12 @@ public class ClientDto_CreateItem
 
     public string? DataNonce { get; set; }
     public string? EncryptedKey { get; set; }
+    public string? NonEncryptedKey { get; set; }
     public string? SignatureOfKey { get; set; }
     public string? SigningPublicKey { get; set; }
+    public string? SigningPrivateKey { get; set; }
     public string? EncryptedKeyNonce { get; set; }
 
     public ItemShareOption ItemShareOption { get; set; }
-
     public ClientDto_ShareItem? DTO_ShareItem { get; set; }
 }

@@ -8,7 +8,6 @@ internal static class LogOutHelper
 {
     internal static async Task LogOut
     (
-        AppState appState,
         NavigationManager navigationManager,
         ILocalStorageService localStorageService,
         IAuthenticationService authenticationService
@@ -25,8 +24,6 @@ internal static class LogOutHelper
         
         if (await localStorageService.ContainKeyAsync("Role"))
             await localStorageService.RemoveItemAsync("Role");
-
-        appState.LogOut();
 
         await authenticationService.LogoutUser();
         await localStorageService.RemoveItemAsync("UserData");

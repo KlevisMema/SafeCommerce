@@ -126,9 +126,8 @@
             const data = await getUserKeyPairFromDatabase(userId);
 
 
-            if (!data) {
+            if (!data) 
                 throw new Error('Key pair not found for the user.');
-            }
 
             const symmetricKey = await generateSymmetricKey();
 
@@ -339,6 +338,56 @@
             const user = await getUserKeyPairFromDatabase(userId);
 
             const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(shop.encryptedSymmetricKey, user.keyPair.privateKey, user.keyPair.publicKey, shop.keyNonce);
+            const encryptedSymmetricKey = await encryptSymmetricKeyForUser(symmetricKeyBase64, recipientPublicKeyBase64, user.keyPair.privateKey);
+
+            return {
+                EncryptedKeyNonce: encryptedSymmetricKey.nonceBase64,
+                EncryptedKey: encryptedSymmetricKey.encryptedSymmetricKeyBase64
+            }
+        }
+
+        async function encryptItemData(item, userId) {
+            const data = await getUserKeyPairFromDatabase(userId);
+
+            if (!data) 
+                throw new Error('Key pair not found for the user.');
+            
+            const symmetricKeyForItem = await generateSymmetricKey();
+            const nonceForItemData = crypto.getRandomValues(new Uint8Array(12));
+
+            const encryptedName = await encryptDataWithSymmetricKey(item.name, symmetricKeyForItem, nonceForItemData);
+            const encryptedDescription = await encryptDataWithSymmetricKey(item.description, symmetricKeyForItem, nonceForItemData);
+            const encryptedPrice = await encryptDataWithSymmetricKey(item.price, symmetricKeyForItem, nonceForItemData);
+            const encryptedPicture = await encryptDataWithSymmetricKey(item.picture, symmetricKeyForItem, nonceForItemData);
+
+            const encryptedSymmetricItemKey = await encryptSymmetricKeyForUser(symmetricKeyForItem, data.keyPair.publicKey, data.keyPair.privateKey);
+            const signingKeys = await generateSigningKeyPairWithNoSeed();
+            const hashedSecretKey = hashData(nacl.util.decodeBase64(symmetricKeyForItem));
+            const signature = signData(hashedSecretKey, nacl.util.decodeBase64(signingKeys.privateKey));
+            const signatureBase64 = nacl.util.encodeBase64(signature);
+
+            return {
+                Name: encryptedName.encryptedData,
+                Description: encryptedDescription.encryptedData,
+                Price: item.price,
+                EncryptedPrice: encryptedPrice.encryptedData,
+                Picture: nacl.util.decodeBase64(encryptedPicture.encryptedData),
+                ShopId: item.shopId,
+                DataNonce: nacl.util.encodeBase64(nonceForItemData),
+                EncryptedKey: encryptedSymmetricItemKey.encryptedSymmetricKeyBase64,
+                SignatureOfKey: signatureBase64,
+                SigningPublicKey: signingKeys.publicKey,
+                SigningPrivateKey: signingKeys.privateKey,
+                EncryptedKeyNonce: encryptedSymmetricItemKey.nonceBase64,
+                ItemShareOption: item.itemShareOption,
+                DTO_ShareItem: item.dTO_ShareItem,
+                NonEncryptedKey: symmetricKeyForItem
+            }
+        }
+
+        async function shareItemToUser(recipientPublicKeyBase64, symmetricKeyBase64, userId) {
+            const user = await getUserKeyPairFromDatabase(userId);
+
             const encryptedSymmetricKey = await encryptSymmetricKeyForUser(symmetricKeyBase64, recipientPublicKeyBase64, user.keyPair.privateKey);
 
             return {

@@ -5,7 +5,7 @@ using SafeCommerce.ClientUtilities.Responses;
 namespace SafeCommerce.ClientServices.Interfaces;
 public interface IClientService_Item
 {
-    Task<ClientUtil_ApiResponse<ClientDto_Item>> 
+    Task<ClientUtil_ApiResponse<bool>> 
     CreateItem
     (
         ClientDto_CreateItem createItemDto

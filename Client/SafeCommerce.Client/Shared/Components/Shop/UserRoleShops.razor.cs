@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using SafeCommerce.Client.Internal.Helpers;
 using SafeCommerce.Client.Shared.Forms.Shop;
 using SafeCommerce.ClientServices.Interfaces;
+using SafeCommerce.ClientDTO.Enums;
 
 namespace SafeCommerce.Client.Shared.Components.Shop;
 
@@ -158,10 +159,11 @@ public partial class UserRoleShops
     )
     {
         var parameters = new DialogParameters
-            {
-                { "Shop", shop },
-                { "IsPrivateShop", isPrivateShop },
-            };
+        {
+            { "Shop", shop },
+            { "IsPrivateShop", isPrivateShop },
+            { "InvitationReason", InvitationReason.ShopInvitation },
+        };
 
         var dialog = await DialogService.ShowAsync<InviteUserToShop>("Invite user to shop", parameters, DialogHelper.SimpleDialogOptions());
         await dialog.Result;

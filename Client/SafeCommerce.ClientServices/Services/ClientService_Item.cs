@@ -7,6 +7,7 @@ using SafeCommerce.ClientServerShared.Routes;
 using SafeCommerce.ClientServices.Interfaces;
 using SafeCommerce.ClientUtilities.Responses;
 using SafeCommerce.ClientDTO.Moderation;
+using System.Net.Http.Json;
 #endregion
 
 namespace SafeCommerce.ClientServices.Services;
@@ -233,7 +234,7 @@ public class ClientService_Item
     #endregion
 
     #region Post
-    public async Task<ClientUtil_ApiResponse<ClientDto_Item>>
+    public async Task<ClientUtil_ApiResponse<bool>>
     CreateItem
     (
         ClientDto_CreateItem createItemDto
@@ -245,26 +246,18 @@ public class ClientService_Item
         {
             HttpClient? httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
-            Dictionary<string, string>? registerData = new()
-                {
-                    { nameof(ClientDto_CreateItem.Name), createItemDto.Name },
-                    { nameof(ClientDto_CreateItem.Price), createItemDto.Price.ToString() },
-                    { nameof(ClientDto_CreateItem.Picture), createItemDto.Picture!.ToString()! },
-                    { nameof(ClientDto_CreateItem.Description), createItemDto.Description },
-                };
-
-            FormUrlEncodedContent? contentForm = new(registerData);
+            StringContent content = new(JsonSerializer.Serialize(createItemDto), Encoding.UTF8, "application/json");
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Post, BaseRoute.RouteItemProxy + Route_ItemRoutes.ProxyCreateItem)
             {
-                Content = contentForm
+                Content = content
             };
 
             response = await httpClient.SendAsync(requestMessage);
 
             string? responseContent = await response.Content.ReadAsStringAsync();
 
-            ClientUtil_ApiResponse<ClientDto_Item>? readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_Item>>
+            ClientUtil_ApiResponse<bool>? readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>
             (
                 responseContent, new JsonSerializerOptions
                 {
@@ -278,13 +271,13 @@ public class ClientService_Item
         {
             if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
             {
-                return new ClientUtil_ApiResponse<ClientDto_Item>()
+                return new ClientUtil_ApiResponse<bool>()
                 {
                     Message = argException.Message,
                     Errors = null,
                     StatusCode = response.StatusCode,
                     Succsess = false,
-                    Value = null
+                    Value = false,
                 };
             }
             else
@@ -292,13 +285,13 @@ public class ClientService_Item
         }
         catch (Exception)
         {
-            return new ClientUtil_ApiResponse<ClientDto_Item>()
+            return new ClientUtil_ApiResponse<bool>()
             {
                 Message = ClientUtil_ExceptionResponse.GeneralMessage,
                 Errors = null,
                 StatusCode = response.StatusCode,
                 Succsess = false,
-                Value = null
+                Value = false
             };
         }
     }

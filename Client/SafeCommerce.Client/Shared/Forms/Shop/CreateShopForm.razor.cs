@@ -10,13 +10,13 @@ namespace SafeCommerce.Client.Shared.Forms.Shop;
 
 public partial class CreateShopForm
 {
+    [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
-    [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
     [Inject] private IClientService_Shop ShopService { get; set; } = null!;
+    [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
 
     private bool _processing = false;
     private EditForm? CreateShopFormContext;
-    [Inject] private ISnackbar _snackbar { get; set; } = null!;
     private ClientDto_CreateShop CreateShopDto { get; set; } = new();
 
     private async Task

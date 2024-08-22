@@ -107,7 +107,7 @@ public partial class KeysGeneration
                 {
                     await _jsInterop.InvokeVoidAsync("deleteKeyFromDatabase", userId);
                     _snackbar.Add("Someting went wrong", Severity.Error, config => { config.CloseAfterNavigation = true; });
-                    await LogOutHelper.LogOut(AppState, _navigationManager, _localStorage, _authenticationService);
+                    await LogOutHelper.LogOut(_navigationManager, _localStorage, _authenticationService);
 
                     return;
                 }

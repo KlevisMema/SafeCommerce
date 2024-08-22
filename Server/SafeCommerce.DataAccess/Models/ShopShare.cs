@@ -11,6 +11,7 @@ public class ShopShare : Base
 
     public Guid ShopId { get; set; }
     public virtual Shop? Shop { get; set; }
+
     public string? EncryptedKey { get; set; }
     public string? EncryptedKeyNonce { get; set; }
 

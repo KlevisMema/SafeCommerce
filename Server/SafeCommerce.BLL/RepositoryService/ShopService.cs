@@ -13,7 +13,6 @@ using SafeShare.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Responses;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Shop;
-using SendGrid.Helpers.Mail;
 
 namespace SafeCommerce.BLL.RepositoryService
 {

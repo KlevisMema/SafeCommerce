@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafeCommerce.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using SafeCommerce.DataAccess.Context;
 namespace SafeShare.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240821221633_AddedPropsInShareItemModel")]
+    partial class AddedPropsInShareItemModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -359,9 +362,6 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<string>("EncryptedKeyNonce")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EncryptedPrice")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
@@ -388,10 +388,10 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<byte[]>("Picture")
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<decimal?>("Price")
+                    b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid?>("ShopId")
+                    b.Property<Guid>("ShopId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SignatureOfKey")
@@ -713,7 +713,8 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.HasOne("SafeShare.DataAccessLayer.Models.Shop", "Shop")
                         .WithMany("Items")
                         .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Owner");
 

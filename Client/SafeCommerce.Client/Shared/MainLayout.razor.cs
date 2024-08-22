@@ -175,8 +175,6 @@ public partial class MainLayout
         if (await _localStorage.ContainKeyAsync("Role"))
             await _localStorage.RemoveItemAsync("Role");
 
-        _appState.LogOut();
-
         LogOutText = "Logging Out";
         hideLogOutBtn = true;
         _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });

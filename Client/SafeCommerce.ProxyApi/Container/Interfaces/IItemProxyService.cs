@@ -45,7 +45,7 @@ public interface IItemProxyService
     #endregion
 
     #region Post
-    Task<Util_GenericResponse<DTO_Item>>
+    Task<Util_GenericResponse<bool>>
     CreateItem
     (
         Guid ownerId,
