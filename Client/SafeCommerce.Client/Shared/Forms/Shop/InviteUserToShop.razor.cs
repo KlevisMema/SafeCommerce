@@ -1,25 +1,28 @@
 ﻿using MudBlazor;
 using Microsoft.JSInterop;
+using Blazored.LocalStorage;
 using SafeCommerce.ClientDTO.Shop;
+using SafeCommerce.ClientDTO.Enums;
 using Microsoft.AspNetCore.Components;
 using SafeCommerce.ClientDTO.Invitation;
-using SafeCommerce.ClientDTO.AccountManagment;
 using SafeCommerce.ClientServices.Interfaces;
-using Blazored.LocalStorage;
+using SafeCommerce.ClientDTO.AccountManagment;
 
 namespace SafeCommerce.Client.Shared.Forms.Shop;
 
 public partial class InviteUserToShop
 {
-    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
     [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
     [Inject] private IClientService_Invitation ServiceInvitation { get; set; } = null!;
     [Inject] private IClientService_UserManagment UserManagmentService { get; set; } = null!;
 
-    [Parameter] public ClientDto_Shop? Shop { get; set; }
     [Parameter] public bool IsPrivateShop { get; set; }
+    [Parameter] public ClientDto_Shop? Shop { get; set; }
+    [Parameter] public InvitationReason InvitationReason { get; set; }
+    [Parameter] public EventCallback<ClientDto_UserSearched> OnUserSelected { get; set; } 
 
     private bool _processing = false;
     private ClientDto_UserSearched? SelectedUser { get; set; }
@@ -29,7 +32,15 @@ public partial class InviteUserToShop
     ValidateForm()
     {
         if (SelectedUser is not null)
-            await SubmitInviteUserToGroupForm();
+        {
+            if (InvitationReason == InvitationReason.ShopInvitation)
+                await SubmitInviteUserToGroupForm();
+            else
+            {
+                await OnUserSelected.InvokeAsync(SelectedUser);
+                MudDialog.Close();
+            }
+        }
         else
             ShowValidationsMessages(["Please select a user!"]);
     }
@@ -113,7 +124,6 @@ public partial class InviteUserToShop
                 }
             );
         }
-
 
         return result.Value ?? Enumerable.Empty<ClientDto_UserSearched>();
     }

@@ -3,17 +3,16 @@ using Microsoft.AspNetCore.Http;
 using SafeCommerce.Utilities.Log;
 using SafeCommerce.BLL.Interfaces;
 using Microsoft.Extensions.Logging;
+using SafeCommerce.Utilities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Utilities.Responses;
 using SafeShare.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Item;
 using SafeCommerce.DataTransormObject.Moderation;
-using Microsoft.AspNetCore.Identity;
-using SafeCommerce.DataAccess.Models;
-using SafeCommerce.Utilities.Enums;
-using SendGrid.Helpers.Mail;
 
 namespace SafeCommerce.BLL.RepositoryService;
 public class ItemService
@@ -31,41 +30,319 @@ public class ItemService
     httpContextAccessor
 ), IItemService
 {
-    public async Task<Util_GenericResponse<DTO_Item>> CreateItem
+    public async Task<Util_GenericResponse<bool>> CreateItem
     (
         DTO_CreateItem createItemDto,
         string ownerId,
         CancellationToken cancellationToken
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
         try
         {
-            var item = _mapper.Map<Item>(createItemDto);
-            item.OwnerId = ownerId;
+            ApplicationUser? user = await userManager.FindByIdAsync(ownerId);
 
-            _db.Items.Add(item);
+            if (user is null)
+            {
+                _logger.LogWarning
+                (
+                     """
+                        [ItemService]-[CreateItem Method] =>
+                        [RESULT]: User was not found {userId}.
+                    """,
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response(false, false, "User not found", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            string message = "";
+
+            if (createItemDto.ItemShareOption == ItemShareOption.Shop)
+            {
+                if (createItemDto.DTO_ShareItem is not null)
+                {
+                    _logger.LogCritical
+                    (
+                       """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Item not expected to be shared with a user only. Object not correct.
+                            OwnerId: {OwnerId}.
+                        """,
+                       ownerId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                Shop? shop = await _db.Shops.Include(u => u.Owner).FirstOrDefaultAsync(sh => sh.ShopId == createItemDto.ShopId, cancellationToken);
+
+                if (shop is null)
+                {
+                    _logger.LogWarning
+                    (
+                         """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Shop was not found {shopId}.
+                        """,
+                        createItemDto.ShopId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Shop not found", null, System.Net.HttpStatusCode.NotFound);
+                }
+
+                if (shop.OwnerId != ownerId)
+                {
+                    _logger.LogWarning
+                    (
+                         """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: User {ownerId} is not the owner of Shop  {shopId}.
+                        """,
+                         ownerId,
+                        createItemDto.ShopId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "You are not the owner of the shop", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                if (shop.MakePublic && !shop.IsPublic && !shop.IsApproved)
+                {
+                    _logger.LogWarning
+                    (
+                         """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Shop {shopId} is not yet approved, item cant be added.
+                        """,
+                        createItemDto.ShopId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, " Shop is not yet approved, item cant be added.", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                if
+                (
+                    !shop.MakePublic && !shop.IsPublic && !shop.IsApproved &&
+                    String.IsNullOrEmpty(createItemDto.EncryptedKey) &&
+                    String.IsNullOrEmpty(createItemDto.SignatureOfKey) &&
+                    String.IsNullOrEmpty(createItemDto.SigningPublicKey) &&
+                    String.IsNullOrEmpty(createItemDto.EncryptedKeyNonce) &&
+                    String.IsNullOrEmpty(createItemDto.DataNonce)
+                )
+                {
+                    _logger.LogWarning
+                    (
+                         """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Shop {shopId} is private but the item does not have the necessary information for the keys. If shop is encrypted the items inside it need to be encrypted also.
+                        """,
+                        createItemDto.ShopId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Item are not encrypted it can not be added in a private shop!", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                Item? item = _mapper.Map<Item>(createItemDto);
+                item.OwnerId = ownerId;
+                item.ShopId = shop.ShopId;
+                item.CreatedAt = DateTime.Now;
+
+                if (shop.IsPublic && shop.MakePublic && shop.IsApproved)
+                {
+                    item.MakePublic = true;
+                    item.IsPublic = false;
+                    item.IsApproved = false;
+                }
+
+                _db.Items.Add(item);
+
+                if (createItemDto.ShareItemToPrivateShop is not null && createItemDto.ShareItemToPrivateShop.Count > 0)
+                {
+                    List<ItemShare> itemShares = new();
+
+                    foreach (DTO_ShareItem member in createItemDto.ShareItemToPrivateShop)
+                    {
+
+                        itemShares.Add(new ItemShare
+                        {
+                            ItemId = item.ItemId,
+                            EncryptedKey = member.EncryptedKey,
+                            EncryptedKeyNonce = member.EncryptedKeyNonce,
+                            UserId = member.UserId,
+                        });
+                    }
+
+                    await _db.ItemShares.AddRangeAsync(itemShares);
+                }
+
+                message = "Item created successfully and shared with the shop";
+            }
+            else if (createItemDto.ItemShareOption == ItemShareOption.ToUser)
+            {
+                if (createItemDto.DTO_ShareItem is null)
+                {
+                    _logger.LogWarning
+                   (
+                        """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: User information not provided {DTO_ShareItem}.
+                             OwnerId: {OwnerId}
+                        """,
+                       createItemDto.DTO_ShareItem,
+                       ownerId
+                   );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "User information not provided, item can't be shared with the user not specified.", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                if (createItemDto.ShareItemToPrivateShop is not null)
+                {
+                    _logger.LogCritical
+                    (
+                       """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Item not expected to be shared with users of a pivate shop. Object not correct.
+                            OwnerId: {OwnerId}.
+                        """,
+                       ownerId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                var invitedUser = await userManager.FindByIdAsync(createItemDto.DTO_ShareItem.UserId);
+
+                if (invitedUser is null || invitedUser.IsDeleted || !invitedUser.EmailConfirmed)
+                {
+                    _logger.LogWarning
+                    (
+                        """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Invited user does not exists {userId}. OwnerId: {OwnerId}
+                        """,
+                        createItemDto.DTO_ShareItem.UserId,
+                        ownerId
+                     );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "User you are trying to invite does not exists.", null, System.Net.HttpStatusCode.NotFound);
+                }
+
+                if (String.IsNullOrEmpty(createItemDto.DTO_ShareItem.EncryptedKey) || String.IsNullOrEmpty(createItemDto.DTO_ShareItem.EncryptedKeyNonce))
+                {
+                    _logger.LogWarning
+                    (
+                        """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Invited user keys missing from the client {userId}. OwnerId: {OwnerId}
+                        """,
+                        createItemDto.DTO_ShareItem.UserId,
+                        ownerId
+                     );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, try again later.", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                var item = _mapper.Map<Item>(createItemDto);
+                item.OwnerId = ownerId;
+                item.ShopId = null;
+                item.MakePublic = false;
+                item.IsPublic = false;
+                item.MakePublic = false;
+                item.CreatedAt = DateTime.Now;
+                _db.Items.Add(item);
+
+                var itemShare = new ItemShare
+                {
+                    ItemId = item.ItemId,
+                    UserId = invitedUser.Id,
+                    EncryptedKeyNonce = createItemDto.DTO_ShareItem.EncryptedKeyNonce,
+                    EncryptedKey = createItemDto.DTO_ShareItem.EncryptedKey
+                };
+
+                _db.ItemShares.Add(itemShare);
+
+                message = "Item created successfully and shared with the user";
+            }
+            else
+            {
+                if
+                (
+                    !String.IsNullOrEmpty(createItemDto.EncryptedKey) ||
+                    !String.IsNullOrEmpty(createItemDto.SignatureOfKey) ||
+                    !String.IsNullOrEmpty(createItemDto.SigningPublicKey) ||
+                    !String.IsNullOrEmpty(createItemDto.EncryptedKeyNonce) ||
+                    !String.IsNullOrEmpty(createItemDto.DataNonce)
+                )
+                {
+                    _logger.LogCritical
+                    (
+                        """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Item is being shared to everyone but it contains cryptographic keys from client.
+                            OwnerId: {OwnerId}.
+                        """,
+                        ownerId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                if (createItemDto.DTO_ShareItem is not null || createItemDto.ShareItemToPrivateShop is not null)
+                {
+                    _logger.LogCritical
+                    (
+                       """
+                            [ItemService]-[CreateItem Method] =>
+                            [RESULT]: Item not expected to be shares to a speciic user or to a shop if the reason was to be shared with a user only. Object not correct.
+                            OwnerId: {OwnerId}.
+                        """,
+                       ownerId
+                    );
+
+                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                }
+
+                var item = _mapper.Map<Item>(createItemDto);
+
+                item.OwnerId = ownerId;
+                item.MakePublic = true;
+                item.IsPublic = false;
+                item.IsApproved = false;
+                item.ShopId = null;
+                item.CreatedAt = DateTime.Now;
+
+                _db.Items.Add(item);
+
+                message = "Item created successfully, and it's subject for moderation";
+            }
+
             await _db.SaveChangesAsync(cancellationToken);
 
-            var createdItem = _mapper.Map<DTO_Item>(item);
+            await transaction.CommitAsync(cancellationToken);
 
-            _logger.LogInformation(
-                """
+            _logger.LogInformation
+            (
+              """
                 [ItemService]-[CreateItem Method] =>
-                [RESULT]: Item created successfully. ItemId: {ItemId}, OwnerId: {OwnerId}.
+                [RESULT]: Item created successfully. OwnerId: {OwnerId}.
                 """,
-                createdItem.ItemId, ownerId);
+              ownerId
+            );
 
-            return Util_GenericResponse<DTO_Item>.Response(createdItem, true, "Item created successfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<bool>.Response(true, true, message, null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<DTO_Item, ItemService>.ReturnInternalServerError(
+            await transaction.RollbackAsync(cancellationToken);
+
+            return await Util_LogsHelper<bool, ItemService>.ReturnInternalServerError(
                 ex,
                 _logger,
                 $"""
                 Something went wrong in [ItemService]-[CreateItem Method], user with [ID] {ownerId} tried to create an item.
                 """,
-                null,
+                false,
                 _httpContextAccessor);
         }
     }
@@ -227,11 +504,56 @@ public class ItemService
     {
         try
         {
+            //var items = await _db.Items
+            //    .Where(i => i.ShopId == shopId && (i.OwnerId == userId || i.Shop.ShopShares.Any(ss => ss.UserId == userId)))
+            //    .Include(i => i.Owner)
+            //    .Select(i => _mapper.Map<DTO_Item>(i))
+            //    .ToListAsync(cancellationToken);
+
             var items = await _db.Items
-                .Where(i => i.ShopId == shopId && (i.OwnerId == userId || i.Shop.ShopShares.Any(ss => ss.UserId == userId)))
+                .Where(i => i.ShopId == shopId)
                 .Include(i => i.Owner)
-                .Select(i => _mapper.Map<DTO_Item>(i))
+                .Include(i => i.ItemShares)
                 .ToListAsync(cancellationToken);
+
+            List<Item> Items = new();
+
+            foreach (var item in items)
+            {
+                if (item.MakePublic && !item.IsPublic && !item.IsApproved)
+                {
+                    continue;
+                }
+                else if (item.MakePublic && item.IsPublic && !item.IsApproved)
+                {
+                    continue;
+                }
+                else if (item.MakePublic && !item.IsPublic && item.IsApproved)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (item.OwnerId == userId)
+                    {
+                        item.EncryptedKey = item.EncryptedKey;
+                        item.EncryptedKeyNonce = item.EncryptedKeyNonce;
+                    }
+                    else
+                    {
+                        var itemShare = item.ItemShares?.FirstOrDefault(ss => ss.UserId == userId);
+                        if (itemShare != null)
+                        {
+                            item.EncryptedKey = itemShare.EncryptedKey;
+                            item.EncryptedKeyNonce = itemShare.EncryptedKeyNonce;
+                        }
+                    }
+                }
+
+                Items.Add(item);
+            }
+
+            var itemDtos = _mapper.Map<List<DTO_Item>>(Items);
 
             _logger.LogInformation(
                 """
@@ -240,7 +562,7 @@ public class ItemService
                 """,
                 shopId, userId);
 
-            return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(items, true, "Items retrieved successfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(itemDtos, true, "Items retrieved successfully", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
@@ -317,21 +639,35 @@ public class ItemService
 
     public async Task<Util_GenericResponse<bool>> ShareItem
     (
+        Guid ownerId,
         DTO_ShareItem shareItemDto,
         CancellationToken cancellationToken
     )
     {
         try
         {
-            var item = await _db.Items.FindAsync(shareItemDto.ItemId);
-            if (item == null || item.OwnerId != shareItemDto.UserId)
-            {
-                return Util_GenericResponse<bool>.Response(false, false, "Item not found or no permission to share.", null, System.Net.HttpStatusCode.NotFound);
-            }
+            var item = await _db.Items.FindAsync([shareItemDto.ItemId], cancellationToken);
 
-            if (shareItemDto.IsPublic)
+            if (item == null || item.OwnerId != ownerId.ToString())
+                return Util_GenericResponse<bool>.Response(false, false, "Item not found", null, System.Net.HttpStatusCode.NotFound);
+
+            if (shareItemDto.ItemShareOption is null)
+                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, try again.", null, System.Net.HttpStatusCode.BadRequest);
+
+            if (shareItemDto.ItemShareOption == ItemShareOption.Everybody)
             {
-                item.IsPublic = true;
+                item.MakePublic = true;
+                item.IsApproved = false;
+                item.IsApproved = false;
+            }
+            else if (shareItemDto.ItemShareOption == ItemShareOption.Shop)
+            {
+                var shop = await _db.Shops.FindAsync([shareItemDto.ItemId], cancellationToken);
+
+                if (shop is null)
+                    return Util_GenericResponse<bool>.Response(false, false, "Shop was not found for item to share", null, System.Net.HttpStatusCode.NotFound);
+
+                item.ShopId = shop.ShopId;
             }
             else
             {
@@ -372,6 +708,8 @@ public class ItemService
                 return Util_GenericResponse<bool>.Response(false, false, "Item not found.", null, System.Net.HttpStatusCode.NotFound);
 
             item.IsApproved = moderateItemDto.Approved;
+            item.IsPublic = moderateItemDto.Approved;
+
             _db.ModerationHistories.Add(new ModerationHistory
             {
                 ItemId = moderateItemDto.ItemId,
@@ -408,9 +746,41 @@ public class ItemService
                 .Where(i => i.OwnerId == userId || i.Shop.ShopShares.Any(ss => ss.UserId == userId))
                 .Include(i => i.Owner)
                 .Include(i => i.Shop)
+                .Include(i => i.ItemShares)
                 .ToListAsync(cancellationToken);
 
-            var itemDtos = _mapper.Map<List<DTO_Item>>(items);
+            List<Item> Items = new();
+
+            foreach (var item in items)
+            {
+                if (item.MakePublic && !item.IsPublic && !item.IsApproved)
+                    continue;
+                else if (item.MakePublic && item.IsPublic && !item.IsApproved)
+                    continue;
+                else if (item.MakePublic && !item.IsPublic && item.IsApproved)
+                    continue;
+                else
+                {
+                    if (item.OwnerId == userId)
+                    {
+                        item.EncryptedKey = item.EncryptedKey;
+                        item.EncryptedKeyNonce = item.EncryptedKeyNonce;
+                    }
+                    else
+                    {
+                        var itemShare = item.ItemShares?.FirstOrDefault(ss => ss.UserId == userId);
+                        if (itemShare != null)
+                        {
+                            item.EncryptedKey = itemShare.EncryptedKey;
+                            item.EncryptedKeyNonce = itemShare.EncryptedKeyNonce;
+                        }
+                    }
+                }
+
+                Items.Add(item);
+            }
+
+            var itemDtos = _mapper.Map<List<DTO_Item>>(Items);
 
             return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(itemDtos, true, "Items retrieved successfully.", null, System.Net.HttpStatusCode.OK);
         }

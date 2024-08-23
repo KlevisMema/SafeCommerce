@@ -5,7 +5,7 @@ using SafeCommerce.DataTransormObject.Moderation;
 namespace SafeCommerce.BLL.Interfaces;
 public interface IItemService
 {
-    Task<Util_GenericResponse<DTO_Item>> CreateItem
+    Task<Util_GenericResponse<bool>> CreateItem
     (
         DTO_CreateItem createItemDto, 
         string ownerId, 
@@ -43,6 +43,7 @@ public interface IItemService
 
     Task<Util_GenericResponse<bool>> ShareItem
     (
+        Guid ownerId,
         DTO_ShareItem shareItemDto, 
         CancellationToken cancellationToken = default
     );

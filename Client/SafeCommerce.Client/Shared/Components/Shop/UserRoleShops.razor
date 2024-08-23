@@ -29,12 +29,12 @@
                                                     <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.DateRange" /> Created: @shop.CreatedAt.ToShortDateString()</MudText>
                                                     <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Update" /> Modified: @shop.ModifiedAt?.ToShortDateString() ?? "N/A"</MudText>
                                                     <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Group" /> Members: @shop.MemberCount</MudText>
-                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.ShoppingBasket" /> Members: @shop.ItemCount</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.ShoppingBasket" /> Items: @shop.ItemCount</MudText>
                                                 </MudPaper>
                                             </TooltipContent>
                                         </MudTooltip>
-                                        <MudTooltip Text="View Items">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                        <MudTooltip Text="Preview Items Shop">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" OnClick="@(() => PreviewShop(shop))" />
                                         </MudTooltip>
                                         <MudTooltip Text="Edit">
                                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditShopOpenDialog(shop))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
@@ -81,15 +81,18 @@
                                                     <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.DateRange" /> Created: @shop.CreatedAt.ToShortDateString()</MudText>
                                                     <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Update" /> Modified: @shop.ModifiedAt?.ToShortDateString() ?? "N/A"</MudText>
                                                     <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Group" /> Members: @shop.MemberCount</MudText>
-                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.ShoppingBasket" /> Members: @shop.ItemCount</MudText>
+                                                    <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.ShoppingBasket" /> Items: @shop.ItemCount</MudText>
                                                 </MudPaper>
                                             </TooltipContent>
                                         </MudTooltip>
                                         @if (shop.IsPublic)
                                         {
-                                            <MudTooltip Text="View Items">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
-                                            </MudTooltip>
+                                            @if (shop.ItemCount > 0)
+                                            {
+                                                <MudTooltip Text="Preview Items Shop">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" OnClick="@(() => PreviewShop(shop))" />
+                                                </MudTooltip>
+                                            }
                                             <MudTooltip Text="Edit">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditShopOpenDialog(shop))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
                                             </MudTooltip>
@@ -119,10 +122,10 @@
                             </MudCardContent>
                             <MudCardActions>
                                 <MudTooltip Text="View Items">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Href=@($"/Items-For-Sale/{shop.ShopId}") />
                                 </MudTooltip>
                                 <MudTooltip Text="View Members">
-                                    <MudIconButton Icon="@Icons.Material.Filled.People" Color="Color.Tertiary" OnClick="@(() => OpenMembersDialog(shop.ShopId, false))" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.People" Color="Color.Tertiary" OnClick="@(() => OpenMembersDialog(shop.ShopId, false))" Disabled="@(!shop.IsPublic && shop.MakePublic)"  />
                                 </MudTooltip>
                             </MudCardActions>
                         </MudCard>

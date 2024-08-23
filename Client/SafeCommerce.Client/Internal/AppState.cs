@@ -28,8 +28,4 @@ public class AppState
     {
         return ClientSecrests;
     }
-
-    public event Action? OnLogOut;
-
-    public void LogOut() => OnLogOut?.Invoke();
 }

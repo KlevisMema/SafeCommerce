@@ -25,30 +25,11 @@
                                     </TooltipContent>
                                 </MudTooltip>
                                 <MudTooltip Text="Accept">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenWith" Color="Color.Primary" OnClick="@(() => ToggleOpen(true))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenWith" Color="Color.Primary" OnClick="@(() => ToggleOpenDialogModration(true, shop))" />
                                 </MudTooltip>
                                 <MudTooltip Text="Reject">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Secondary" OnClick="@(() => ToggleOpen(false))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Secondary" OnClick="@(() => ToggleOpenDialogModration(false, shop))" />
                                 </MudTooltip>
-                                <MudPopover Open="@_open" Fixed="true" Class="px-4 pt-4">
-                                    <div class="d-flex flex-column">
-                                        <MudText>Are you sure you want to perform this action?</MudText>
-                                        <div>
-                                            <MudButton Disabled="@_processing" Variant="Variant.Filled" Style="@($"background:{Colors.Cyan.Darken3}")" OnClick="@(() => ModerateShop(shop))">
-                                                @if (_processing)
-                                                {
-                                                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3}")" />
-                                                }
-                                                else
-                                                {
-                                                    <MudText Style="@($"color:white;")">Yes</MudText>
-                                                }
-                                            </MudButton>
-
-                                            <MudButton OnClick="@(() => ToggleOpen(false))" Class="ml-auto mr-n3 mb-1" Color="Color.Error">No</MudButton>
-                                        </div>
-                                    </div>
-                                </MudPopover>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>

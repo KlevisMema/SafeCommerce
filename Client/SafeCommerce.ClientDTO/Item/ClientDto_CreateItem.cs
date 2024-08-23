@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SafeCommerce.ClientDTO.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeCommerce.ClientDTO.Item;
 
@@ -14,7 +15,20 @@ public class ClientDto_CreateItem
 
     [Required]
     [Range(0, 100000)]
-    public decimal Price { get; set; }
-    public byte[]? Picture { get; set; }
-    public Guid? ShopId { get; set; }
+    public decimal? Price { get; set; }
+    public string? EncryptedPrice { get; set; }
+
+    public string? Picture { get; set; }
+    public Guid ShopId { get; set; }
+
+    public string? DataNonce { get; set; }
+    public string? EncryptedKey { get; set; }
+    public string? SignatureOfKey { get; set; }
+    public string? SigningPublicKey { get; set; }
+    public string? EncryptedKeyNonce { get; set; }
+
+    public ItemShareOption ItemShareOption { get; set; }
+
+    public ClientDto_ShareItem? DTO_ShareItem { get; set; }
+    public List<ClientDto_ShareItem>? ShareItemToPrivateShop { get; set; }
 }

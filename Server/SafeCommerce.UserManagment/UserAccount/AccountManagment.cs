@@ -13,6 +13,7 @@ using SafeCommerce.Utilities.Log;
 using Microsoft.Extensions.Options;
 using SafeCommerce.Utilities.Email;
 using Microsoft.Extensions.Logging;
+using SafeCommerce.Utilities.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SafeCommerce.DataAccess.Models;
@@ -26,7 +27,6 @@ using SafeCommerce.Utilities.ConfigurationSettings;
 using SafeCommerce.DataTransormObject.UserManagment;
 using SafeCommerce.DataTransormObject.Authentication;
 using SafeCommerce.Security.JwtSecurity.Implementations;
-using SafeCommerce.Utilities.Enums;
 
 namespace SafeCommerce.UserManagment.UserAccount;
 

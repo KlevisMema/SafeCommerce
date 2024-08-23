@@ -69,6 +69,30 @@ public class ShopController(IMediator mediator) : BaseController(mediator)
     {
         return await _mediator.Send(new MediatR_GetShopsQuery(userId.ToString()), cancellationToken);
     }
+    
+    /// <summary>
+    /// Retrieves all members of the shop.
+    /// </summary>
+    /// <param name="userId">The identifier of the user requesting shop details.</param>
+    /// <param name="shopId">The id of the shop</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <returns>Information about the members of the specified shop.</returns>
+    [Authorize(Roles = "User")]
+    [HttpGet(Route_ShopRoutes.GetMembersOfTheShop)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_ShopMembers>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_ShopMembers>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_ShopMembers>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>>
+    GetMembersOfTheShop
+    (
+        [FromRoute] Guid userId,
+        [FromRoute] Guid shopId,
+        CancellationToken cancellationToken
+    )
+    {
+        return await _mediator.Send(new MediatR_GetMembersOfTheShopQuery(shopId, userId), cancellationToken);
+    }
 
     /// <summary>
     /// Creates a new shop.

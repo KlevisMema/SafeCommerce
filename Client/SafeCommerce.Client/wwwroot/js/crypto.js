@@ -39,7 +39,7 @@ async function generateSigningKeyPair(password, userId) {
 }
 
 async function generateSigningKeyPairWithNoSeed() {
-    const signingKeyPair = nacl.sign.keyPair(); 
+    const signingKeyPair = nacl.sign.keyPair();
 
     const publicKeyBase64 = nacl.util.encodeBase64(signingKeyPair.publicKey);
     const privateKeyBase64 = nacl.util.encodeBase64(signingKeyPair.secretKey);
@@ -114,51 +114,60 @@ async function decryptSymmetricKeyWithPrivateKey(encryptedSymmetricKeyBase64, re
 }
 
 async function decryptDataWithSymmetricKey(data, symmetricKey, nonce) {
-    const decryptedData = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: nonce },
-        symmetricKey,
-        nacl.util.decodeBase64(data)
-    );
+    try {
+        const decryptedData = await crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: nonce },
+            symmetricKey,
+            nacl.util.decodeBase64(data)
+        );
 
-    return new TextDecoder().decode(decryptedData);
+        return new TextDecoder().decode(decryptedData);
+
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 async function decryptPPK(encryptedObject, password) {
-    const { encryptedData, iv } = encryptedObject;
+    try {
+        const { encryptedData, iv } = encryptedObject;
 
-    const encoder = new TextEncoder();
+        const encoder = new TextEncoder();
 
-    const keyMaterial = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(password),
-        "PBKDF2",
-        false,
-        ["deriveKey"]
-    );
+        const keyMaterial = await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(password),
+            "PBKDF2",
+            false,
+            ["deriveKey"]
+        );
 
-    const key = await crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt: new Uint8Array(0),
-            iterations: 100000,
-            hash: "SHA-256"
-        },
-        keyMaterial,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["decrypt"]
-    );
+        const key = await crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: new Uint8Array(0),
+                iterations: 100000,
+                hash: "SHA-256"
+            },
+            keyMaterial,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["decrypt"]
+        );
 
-    const decryptedData = await crypto.subtle.decrypt(
-        {
-            name: "AES-GCM",
-            iv: new Uint8Array(iv)
-        },
-        key,
-        new Uint8Array(encryptedData)
-    );
+        const decryptedData = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: new Uint8Array(iv)
+            },
+            key,
+            new Uint8Array(encryptedData)
+        );
 
-    return new TextDecoder().decode(decryptedData);
+        return new TextDecoder().decode(decryptedData);
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 async function decryptEncryptedFile(encryptedObject, password) {

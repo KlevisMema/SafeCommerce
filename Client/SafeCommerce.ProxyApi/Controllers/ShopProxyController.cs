@@ -65,6 +65,30 @@ namespace SafeCommerce.ProxyApi.Controllers
         }
 
         /// <summary>
+        /// Retrieves all memebers of the a shop.
+        /// </summary>
+        /// <param name="shopId">The id of the shop</param>
+        /// <returns>A list of shops associated with the current user.</returns>
+        [Authorize(Roles = "User")]
+        [HttpGet(Route_ShopRoutes.ProxyGetMembersOfTheShop)]
+        public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>>
+        GetMembersOfTheShop
+        (
+            [FromRoute] Guid shopId
+        )
+        {
+            var result = await _shopProxyService.GetMembersOfTheShop
+            (
+                shopId,
+                Guid.Parse(API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request))),
+                API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+                API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)
+            );
+
+            return Util_GenericControllerResponse<IEnumerable<DTO_ShopMembers>>.ControllerResponse(result);
+        }
+
+        /// <summary>
         /// Retrieves all shops for the current user.
         /// </summary>
         /// <returns>A list of shops associated with the current user.</returns>

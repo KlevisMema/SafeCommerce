@@ -66,15 +66,15 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <returns>A boolean value indicating whether the item was successfully created.</returns>
     [HttpPost(Route_ItemRoutes.CreateItem)]
     [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<DTO_Item>>>
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
     CreateItem
     (
         [FromRoute] Guid userId,
-        [FromForm] DTO_CreateItem createItemDto,
+        [FromBody] DTO_CreateItem createItemDto,
         CancellationToken cancellationToken
     )
     {
@@ -182,7 +182,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ShareItemCommand(shareItemDto), cancellationToken);
+        return await _mediator.Send(new MediatR_ShareItemCommand(userId, shareItemDto), cancellationToken);
     }
 
     /// <summary>

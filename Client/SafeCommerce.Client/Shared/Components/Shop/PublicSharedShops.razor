@@ -27,7 +27,7 @@
                                     </TooltipContent>
                                 </MudTooltip>
                                 <MudTooltip Text="View Items">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Disabled="@(!shop.IsPublic && shop.MakePublic)" Href=@($"/Items-For-Sale/{shop.ShopId}") />
                                 </MudTooltip>
                             </MudCardActions>
                         </MudCard>

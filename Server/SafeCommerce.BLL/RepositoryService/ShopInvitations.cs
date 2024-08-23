@@ -591,6 +591,22 @@ public class ShopInvitations
             return false;
         }
 
+        if (shop.MakePublic && !shop.IsPublic && !shop.IsApproved)
+        {
+            _logger.Log
+            (
+               LogLevel.Error,
+               """
+                    [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} to a non approved shop.
+                 """,
+               await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+               invitingUserId,
+               invitedUserId
+            );
+
+            return false;
+        }
+
         var invitingUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == invitingUserId.ToString() && !x.IsDeleted);
 
         if (invitingUser is null)

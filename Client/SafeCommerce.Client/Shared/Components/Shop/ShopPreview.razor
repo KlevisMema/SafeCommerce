@@ -1,0 +1,47 @@
+﻿<style>
+    .mt-8 {
+        margin-top: 2rem;
+    }
+
+    .mud-dialog-title {
+        background: #00838F;
+        color: white !important;
+    }
+
+    .mud-dialog .mud-icon-root.mud-svg-icon {
+        color: white;
+        border: 1px solid #00838F !important;
+        border-radius: 10px !important;
+    }
+</style>
+
+
+<MudPaper Class="p-4">
+    @if (Items.Count > 0)
+    {
+        <MudGrid Spacing="3">
+            @foreach (var item in Items)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Class="mud-elevation-6">
+                        <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" Height="200" />
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">@item.Name</MudText>
+                            <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                            <MudText Typo="Typo.body2">
+                                @item.Description
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Disabled="true">Buy Now</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        <MudText Typo="Typo.h6">This shop has not items.</MudText>
+    }
+</MudPaper>

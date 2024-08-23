@@ -32,6 +32,15 @@ public interface IShopProxyService
         string userIp,
         string jwtToken
     );
+
+    Task<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>
+    GetMembersOfTheShop
+    (
+        Guid shopId,
+        Guid ownerId,
+        string userIp,
+        string jwtToken
+    );
     #endregion
 
     #region Post

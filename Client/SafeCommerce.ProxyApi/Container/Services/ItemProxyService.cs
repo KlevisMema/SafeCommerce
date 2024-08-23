@@ -358,7 +358,7 @@ public class ItemProxyService
     #endregion
 
     #region Post
-    public async Task<Util_GenericResponse<DTO_Item>>
+    public async Task<Util_GenericResponse<bool>>
     CreateItem
     (
         Guid ownerId,
@@ -413,7 +413,7 @@ public class ItemProxyService
 
                 string? responseContent = await response.Content.ReadAsStringAsync();
 
-                Util_GenericResponse<DTO_Item>? readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_Item>>
+                Util_GenericResponse<bool>? readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>
                 (
                     responseContent,
                     new JsonSerializerOptions
@@ -428,13 +428,13 @@ public class ItemProxyService
             {
                 if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
                 {
-                    return new Util_GenericResponse<DTO_Item>()
+                    return new Util_GenericResponse<bool>()
                     {
                         Message = argException.Message,
                         Errors = null,
                         StatusCode = response.StatusCode,
                         Succsess = false,
-                        Value = null
+                        Value = false
                     };
                 }
                 else
@@ -444,13 +444,13 @@ public class ItemProxyService
             {
                 logger.LogCritical(ex, "Exception in CreateItem.");
 
-                return new Util_GenericResponse<DTO_Item>
+                return new Util_GenericResponse<bool>
                 {
                     Errors = null,
                     Message = ClientUtil_ExceptionResponse.GeneralMessage,
                     StatusCode = response.StatusCode,
                     Succsess = false,
-                    Value = null,
+                    Value = false,
                 };
             }
         }

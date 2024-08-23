@@ -19,7 +19,7 @@ public class MediatR_ShareItemCommandHandler
         CancellationToken cancellationToken
     )
     {
-        var result = await _service.ShareItem(request.ShareItemDto, cancellationToken);
+        var result = await _service.ShareItem(request.OwnerId, request.ShareItemDto, cancellationToken);
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }

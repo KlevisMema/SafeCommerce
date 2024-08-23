@@ -43,6 +43,10 @@
         <MudSpacer />
         @if (this.UserRole == Role.User)
         {
+            <MudTooltip Text="@ShoppingCartText" Style="@($"background:{Colors.Cyan.Darken3};")" Placement="MudBlazor.Placement.Top">
+                <MudIconButton ClickPropagation="true" Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Inherit" Edge="Edge.End" OnClick="() => GoToShoppingCart()" />
+            </MudTooltip>
+
             <MudTooltip Text="@NotificationsText" Style="@($"background:{Colors.Cyan.Darken3};")" Placement="MudBlazor.Placement.Top">
                 <MudBadge Color="Color.Error" Overlap="true" Dot="true" Visible="@(RecivedInvitationsList.Count > 0)">
                     <MudIconButton ClickPropagation="true" Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Edge="Edge.End" OnClick="() => OpenNotifications()" />

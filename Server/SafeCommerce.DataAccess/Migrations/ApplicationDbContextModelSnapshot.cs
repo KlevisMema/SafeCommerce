@@ -17,7 +17,7 @@ namespace SafeShare.DataAccessLayer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -296,7 +296,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogEntries", (string)null);
+                    b.ToTable("LogEntries");
                 });
 
             modelBuilder.Entity("SafeCommerce.DataAccess.Models.RefreshToken", b =>
@@ -334,7 +334,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Item", b =>
@@ -346,8 +346,20 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DataNonce")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EncryptedKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EncryptedKeyNonce")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EncryptedPrice")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsApproved")
@@ -373,14 +385,20 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<byte[]>("Picture")
-                        .HasColumnType("varbinary(max)");
+                    b.Property<string>("Picture")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("ShopId")
+                    b.Property<Guid?>("ShopId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SignatureOfKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SigningPublicKey")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ItemId");
 
@@ -388,7 +406,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ItemShare", b =>
@@ -399,6 +417,12 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("EncryptedKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EncryptedKeyNonce")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ItemShareId")
                         .HasColumnType("uniqueidentifier");
 
@@ -406,7 +430,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ItemShares", (string)null);
+                    b.ToTable("ItemShares");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Metadata", b =>
@@ -436,7 +460,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("Metadata", (string)null);
+                    b.ToTable("Metadata");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ModerationHistory", b =>
@@ -480,7 +504,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsUnique()
                         .HasFilter("[ShopId] IS NOT NULL");
 
-                    b.ToTable("ModerationHistories", (string)null);
+                    b.ToTable("ModerationHistories");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Shop", b =>
@@ -540,7 +564,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Shops", (string)null);
+                    b.ToTable("Shops");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopInvitation", b =>
@@ -583,7 +607,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("ShopInvitations", (string)null);
+                    b.ToTable("ShopInvitations");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopShare", b =>
@@ -613,7 +637,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShopShares", (string)null);
+                    b.ToTable("ShopShares");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -689,8 +713,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.HasOne("SafeShare.DataAccessLayer.Models.Shop", "Shop")
                         .WithMany("Items")
                         .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
 

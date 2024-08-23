@@ -15,5 +15,5 @@ public class DTO_UpdateItem
     [Required]
     [Range(0, 100000)]    
     public decimal Price { get; set; }
-    public byte[]? Picture { get; set; }
+    public string? Picture { get; set; }
 }

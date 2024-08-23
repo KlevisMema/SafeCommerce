@@ -2,6 +2,8 @@
 using Microsoft.JSInterop;
 using Blazored.LocalStorage;
 using SafeCommerce.ClientDTO.Shop;
+using SafeCommerce.ClientDTO.Item;
+using SafeCommerce.ClientDTO.Enums;
 using Microsoft.AspNetCore.Components;
 using SafeCommerce.Client.Internal.Helpers;
 using SafeCommerce.Client.Shared.Forms.Shop;
@@ -17,6 +19,7 @@ public partial class UserRoleShops
     [Inject] private IClientService_Shop ShopService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
+    [Inject] private IAuthenticationService AuthenticationService { get; set; } = null!;
 
     private List<ClientDto_Shop> ListShops { get; set; } = [];
     private List<ClientDto_ShopShare> CurrentShopMembers { get; set; } = [];
@@ -125,11 +128,11 @@ public partial class UserRoleShops
     )
     {
         var parameters = new DialogParameters
-            {
-                { "ShopToBeDeleted", clientDto_Shop },
-                { "PrivateShop", isPrivateShop },
-                { "OnShopDeleted", EventCallback.Factory.Create(this, () => OnDeletedShop(clientDto_Shop, isPrivateShop)) }
-            };
+        {
+            { "ShopToBeDeleted", clientDto_Shop },
+            { "PrivateShop", isPrivateShop },
+            { "OnShopDeleted", EventCallback.Factory.Create(this, () => OnDeletedShop(clientDto_Shop, isPrivateShop)) }
+        };
 
         var dialog = await DialogService.ShowAsync<DeleteShop>("Are you sure you want to delete this group?", parameters, DialogHelper.SimpleDialogOptions());
         await dialog.Result;
@@ -158,10 +161,11 @@ public partial class UserRoleShops
     )
     {
         var parameters = new DialogParameters
-            {
-                { "Shop", shop },
-                { "IsPrivateShop", isPrivateShop },
-            };
+        {
+            { "Shop", shop },
+            { "IsPrivateShop", isPrivateShop },
+            { "InvitationReason", InvitationReason.ShopInvitation },
+        };
 
         var dialog = await DialogService.ShowAsync<InviteUserToShop>("Invite user to shop", parameters, DialogHelper.SimpleDialogOptions());
         await dialog.Result;
@@ -209,5 +213,64 @@ public partial class UserRoleShops
         CurrentShopMembers = [];
         GroupedShops = new();
         await OnInitializedAsync();
+    }
+
+    private async Task
+    PreviewShop
+    (
+        ClientDto_Shop shop
+    )
+    {
+        try
+        {
+            List<ClientDto_Item> ShopItems = new();
+
+            foreach (var item in shop.Items)
+            {
+                if (item.MakePublic && item.IsApproved && item.IsPublic)
+                    ShopItems.Add(item);
+                else
+                {
+                    string? userId = await LocalStorageService.GetItemAsStringAsync("Id");
+
+                    if (userId == null)
+                        await LogOutHelper.LogOut(NavigationManager, LocalStorageService, AuthenticationService);
+
+                    var isOwnerValid = await this.JsRuntime.InvokeAsync<bool>("verifyPublicKey", item.OwnerPublicKey, item.OwnerSigningPublicKey, item.OwnerSignature);
+
+                    if (isOwnerValid)
+                    {
+                        if (!item.MakePublic)
+                        {
+                            ClientDto_Item decryptedItem = new();
+
+                            if (userId == item.OwnerId.ToString())
+                            {
+                                decryptedItem = await this.JsRuntime.InvokeAsync<ClientDto_Item>("decryptMyItemData", item, userId);
+                                decryptedItem.Price = decimal.Parse(decryptedItem.PriceDecrypted);
+                            }
+                            else
+                                decryptedItem = await this.JsRuntime.InvokeAsync<ClientDto_Item>("decryptItemData", item, userId);
+
+                            ShopItems.Add(decryptedItem);
+                        }
+                    }
+
+                }
+
+                var parameters = new DialogParameters<List<ClientDto_ShopShare>>
+                {
+                    { "Items", ShopItems },
+                };
+
+                var dialog = await DialogService.ShowAsync<ShopPreview>("Preview Shop", parameters, DialogHelper.BigDialog());
+                await dialog.Result;
+            }
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
     }
 }

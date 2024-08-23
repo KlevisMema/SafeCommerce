@@ -1,0 +1,54 @@
+﻿@page "/Items-For-Sale/{ShopId:guid}"
+
+@using SafeCommerce.ClientDTO.Item
+
+<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .mt-8 {
+        margin-top: 2rem;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+    <MudPaper Class="p-4" Elevation="2">
+        @if (ItemsOfShop.Count > 0)
+        {
+            <MudGrid Spacing="3" GutterBottom="false">
+                @foreach (ClientDto_Item item in ItemsOfShop)
+                {
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard>
+                            <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">@item.Name</MudText>
+                                <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                                <MudText Typo="Typo.body2">
+                                    @item.Description
+                                </MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary">Buy Now</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+        else
+        {
+            <MudText Typo="Typo.h6">This shop has not items.</MudText>
+        }
+    </MudPaper>
+</MudContainer>

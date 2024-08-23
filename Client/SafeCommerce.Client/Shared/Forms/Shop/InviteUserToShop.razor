@@ -23,7 +23,15 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Send" Class="mr-3 mb-n1" />
-            Invite user to shop
+            @if (this.InvitationReason == ClientDTO.Enums.InvitationReason.ShopInvitation)
+            {
+                @($"Invite user to shop")
+                
+            }
+            else
+            {
+                @($"Share item with user")
+            }
         </MudText>
     </TitleContent>
     <DialogContent>
@@ -76,7 +84,14 @@
             }
             else
             {
-                <MudText Style="@($"color:white")">Send</MudText>
+                if (InvitationReason == ClientDTO.Enums.InvitationReason.ShopInvitation)
+                {
+                    <MudText Style="@($"color:white")">Send</MudText>
+                }
+                else
+                {
+                    <MudText Style="@($"color:white")">Select</MudText>
+                }
             }
         </MudButton>
     </DialogActions>
