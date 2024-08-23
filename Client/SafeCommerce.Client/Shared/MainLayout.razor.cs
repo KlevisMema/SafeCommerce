@@ -35,6 +35,7 @@ public partial class MainLayout
     private bool hideLogOutBtn { get; set; } = false;
     private string LogOutText { get; set; } = "Log Out";
     private string NotificationsText { get; set; } = "Notifications";
+    private string ShoppingCartText { get; set; } = "Shopping Cart";
     private Role UserRole { get; set; }
 
     protected override async Task
@@ -209,5 +210,11 @@ public partial class MainLayout
             _open = false;
         else
             _open = true;
+    }
+
+    private void
+    GoToShoppingCart()
+    {
+        _navigationManager.NavigateTo("/Shopping-Cart");
     }
 }

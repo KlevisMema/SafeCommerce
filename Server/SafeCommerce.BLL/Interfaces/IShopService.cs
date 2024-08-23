@@ -75,4 +75,12 @@ public interface IShopService
         DTO_RemoveUserFromShop removeUserFromShop,
         CancellationToken cancellationToken = default
     );
+
+    Task<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>
+    GetMembersOfTheShop
+    (
+        Guid shopId,
+        Guid ownerId,
+        CancellationToken cancellationToken = default
+    );
 }

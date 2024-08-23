@@ -15,9 +15,6 @@ public class ClientDto_Shop
     public string EncryptedKey { get; set; } = string.Empty;
     public string EncryptedKeyNonce { get; set; } = string.Empty;
 
-    public string UserEncryptedKey { get; set; } = string.Empty;
-    public string UserEncryptedKeyNonce { get; set; } = string.Empty;
-
     public string DataNonce { get; set; } = string.Empty;
     public bool MakePublic { get; set; }
     public bool IsPublic { get; set; }

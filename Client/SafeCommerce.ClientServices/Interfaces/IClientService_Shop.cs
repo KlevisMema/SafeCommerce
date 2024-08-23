@@ -43,6 +43,11 @@ public interface IClientService_Shop
     Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopForModeration>>>
     GetShopsSubjectForModeration();
 
+    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopMembers>>>
+    GetMembersOfTheShop
+    (
+        Guid shopId
+    );
 
     Task<ClientUtil_ApiResponse<bool>>
     ModerateShop

@@ -188,6 +188,7 @@ namespace SafeCommerce.BLL.RepositoryService
                 var shops = await _db.Shops
                     .Where(s => s.IsPublic && s.IsApproved && s.MakePublic && s.OwnerId != userId)
                     .Include(s => s.Owner)
+                    .Include(x => x.Items)
                     .Select(s => _mapper.Map<DTO_Shop>(s))
                     .ToListAsync(cancellationToken);
 
@@ -315,30 +316,43 @@ namespace SafeCommerce.BLL.RepositoryService
                                         .Where(s => s.OwnerId == userId || s.ShopShares!.Any(ss => ss.UserId == userId))
                                         .Include(s => s.Owner)
                                         .Include(s => s.Items!)
-                                        .ThenInclude(i => i.Metadata)
+                                        .ThenInclude(o => o.Owner)
                                         .Include(s => s.ShopShares!)
                                         .ThenInclude(ss => ss.User)
                                         .ToListAsync(cancellationToken);
 
+                List<Shop> ShopsResult = new();
+
                 foreach (var shop in shops)
                 {
-                    if (shop.OwnerId == userId)
-                    {
-                        shop.EncryptedKey = shop.EncryptedKey;
-                        shop.EncryptedKeyNonce = shop.EncryptedKeyNonce;
-                    }
+                    if (shop.MakePublic && !shop.IsPublic && !shop.IsApproved)
+                        continue;
+                    else if (shop.MakePublic && shop.IsPublic && !shop.IsApproved)
+                        continue;
+                    else if (shop.MakePublic && !shop.IsPublic && shop.IsApproved)
+                        continue;
                     else
                     {
-                        var shopShare = shop.ShopShares?.FirstOrDefault(ss => ss.UserId == userId);
-                        if (shopShare != null)
+                        if (shop.OwnerId == userId)
                         {
-                            shop.EncryptedKey = shopShare.EncryptedKey;
-                            shop.EncryptedKeyNonce = shopShare.EncryptedKeyNonce;
+                            shop.EncryptedKey = shop.EncryptedKey;
+                            shop.EncryptedKeyNonce = shop.EncryptedKeyNonce;
+                        }
+                        else
+                        {
+                            var shopShare = shop.ShopShares?.FirstOrDefault(ss => ss.UserId == userId);
+                            if (shopShare != null)
+                            {
+                                shop.EncryptedKey = shopShare.EncryptedKey;
+                                shop.EncryptedKeyNonce = shopShare.EncryptedKeyNonce;
+                            }
                         }
                     }
+
+                    ShopsResult.Add(shop);
                 }
 
-                var shopsDto = _mapper.Map<List<DTO_Shop>>(shops);
+                var shopsDto = _mapper.Map<List<DTO_Shop>>(ShopsResult);
 
 
                 return Util_GenericResponse<IEnumerable<DTO_Shop>>.Response(shopsDto, true, "Shops retrieved successfully.", null, System.Net.HttpStatusCode.OK);
@@ -464,7 +478,7 @@ namespace SafeCommerce.BLL.RepositoryService
                     return Util_GenericResponse<bool>.Response(false, false, "Shop is already public.", null, System.Net.HttpStatusCode.BadRequest);
 
                 shop.IsApproved = moderateShop.Approved;
-                shop.IsPublic = true;
+                shop.IsPublic = moderateShop.Approved;
 
                 _db.ModerationHistories.Add(new ModerationHistory
                 {
@@ -574,6 +588,73 @@ namespace SafeCommerce.BLL.RepositoryService
                     _logger,
                     $"Error removing user with id {removeUserFromShop.UserId} from shop {removeUserFromShop.ShopId} by owner {ownerId}.",
                     false,
+                    _httpContextAccessor);
+            }
+        }
+
+        public async Task<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>
+        GetMembersOfTheShop
+        (
+            Guid shopId,
+            Guid ownerId,
+            CancellationToken cancellationToken = default
+        )
+        {
+            try
+            {
+                ApplicationUser? owner = await userManager.FindByIdAsync(ownerId.ToString());
+
+                if (owner == null)
+                {
+                    _logger.LogError(
+                    """
+                        [ShopService]-[GetMembersOfTheShop Method] =>
+                        [RESULT]:  Owner with id {ownerId} does not exists.
+                    """,
+                     ownerId);
+
+                    return Util_GenericResponse<IEnumerable<DTO_ShopMembers>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+                }
+
+                Shop? shop = await _db.Shops.Include(x => x.ShopShares).ThenInclude(u => u.User).FirstOrDefaultAsync(sh => sh.ShopId == shopId, cancellationToken);
+
+                if (shop == null)
+                {
+                    _logger.LogError(
+                    """
+                        [ShopService]-[GetMembersOfTheShop Method] =>
+                        [RESULT]:  Shop with id {shopId} does not exists.
+                        """,
+                  shopId);
+
+                    return Util_GenericResponse<IEnumerable<DTO_ShopMembers>>.Response(null, false, "Shop does not exists", null, System.Net.HttpStatusCode.NotFound);
+                }
+
+                IEnumerable<DTO_ShopMembers> shopMembers = shop.ShopShares.Select(sh => new DTO_ShopMembers
+                {
+                    UserId = sh.UserId,
+                    PublicKey = sh.User.PublicKey,
+                    Signature = sh.User.Signature,
+                    SigningPublicKey = sh.User.SigningPublicKey,
+                });
+
+                _logger.LogInformation(
+                    """
+                        [ShopService]-[GetMembersOfTheShop Method] =>
+                        [RESULT]: Owner {ownerId} retieved all the members of shop {shopId}.
+                        """,
+                    ownerId,
+                  shopId);
+
+                return Util_GenericResponse<IEnumerable<DTO_ShopMembers>>.Response(shopMembers, true, "Users retrieved succsessfully", null, System.Net.HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return await Util_LogsHelper<IEnumerable<DTO_ShopMembers>, ShopService>.ReturnInternalServerError(
+                    ex,
+                    _logger,
+                    $"Error getting all member of the shop with id {shopId} by the owner with id {ownerId}",
+                    null,
                     _httpContextAccessor);
             }
         }

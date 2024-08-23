@@ -126,7 +126,7 @@
                                     <div class="privateShopDropDownValue">
                                         @shop.Name
                                         <div>
-                                            @if (!shop.IsPublic)
+                                            @if (!shop.IsPublic && !shop.MakePublic)
                                             {
                                                 <MudChip T="string" Color="Color.Primary">Private</MudChip>
 
@@ -137,9 +137,14 @@
                                                     </MudChip>
                                                 </MudTooltip>
                                             }
+                                            else if (shop.IsPublic && shop.MakePublic)
+                                            {
+                                                <MudChip T="string" Color="Color.Primary">Public</MudChip>
+                                            }
                                             else
                                             {
                                                 <MudChip T="string" Color="Color.Primary">Public</MudChip>
+                                                        <MudChip T="string" Color="Color.Warning">Under Moderation</MudChip>
                                             }
 
                                             <MudTooltip Text="Created at" Arrow="true">

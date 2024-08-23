@@ -16,6 +16,20 @@ public static class DialogHelper
     }
 
     public static DialogOptions
+    BigDialog()
+    {
+        return new()
+        {
+            CloseOnEscapeKey = true,
+            BackdropClick = true,
+            CloseButton = true,
+            Position = DialogPosition.Center,
+            FullWidth = true,
+            MaxWidth = MaxWidth.ExtraLarge,
+        };
+    }
+
+    public static DialogOptions
     DialogOptions()
     {
         return new()

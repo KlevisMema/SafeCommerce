@@ -123,7 +123,6 @@ public class ClientService_Shop
         }
     }
 
-
     public async Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_Shop>>>
     GetPublicSharedShops()
     {
@@ -175,6 +174,62 @@ public class ClientService_Shop
             };
         }
     }
+
+    public async Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopMembers>>>
+    GetMembersOfTheShop
+    (
+        Guid shopId
+    )
+    {
+        HttpResponseMessage response = new();
+
+        try
+        {
+            HttpClient? httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
+
+            response = await httpClient.GetAsync(BaseRoute.RouteShopProxy + Route_ShopRoutes.ProxyGetMembersOfTheShop.Replace("{shopId}", shopId.ToString()));
+
+            string? responseContent = await response.Content.ReadAsStringAsync();
+
+            ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopMembers>>? readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopMembers>>>
+            (
+                responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            ) ?? throw new ArgumentNullException(ClientUtil_ExceptionResponse.ArgumentNullException);
+
+            return readResult;
+        }
+        catch (ArgumentNullException argException)
+        {
+            if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
+            {
+                return new ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopMembers>>()
+                {
+                    Message = argException.Message,
+                    Errors = null,
+                    StatusCode = response.StatusCode,
+                    Succsess = false,
+                    Value = null
+                };
+            }
+            else
+                throw;
+        }
+        catch (Exception)
+        {
+            return new ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopMembers>>()
+            {
+                Message = ClientUtil_ExceptionResponse.GeneralMessage,
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
+        }
+    }
+
 
     public async Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopForModeration>>>
     GetShopsSubjectForModeration()

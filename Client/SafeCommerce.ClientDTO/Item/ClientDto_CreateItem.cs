@@ -15,10 +15,10 @@ public class ClientDto_CreateItem
 
     [Required]
     [Range(0, 100000)]
-    public decimal Price { get; set; }
-    public string EncryptedPrice { get; set; } = string.Empty;
-    public byte[]? Picture { get; set; }
+    public decimal? Price { get; set; }
+    public string? EncryptedPrice { get; set; }
 
+    public string? Picture { get; set; }
     public Guid ShopId { get; set; }
 
     public string? DataNonce { get; set; }
@@ -30,4 +30,5 @@ public class ClientDto_CreateItem
     public ItemShareOption ItemShareOption { get; set; }
 
     public ClientDto_ShareItem? DTO_ShareItem { get; set; }
+    public List<ClientDto_ShareItem>? ShareItemToPrivateShop { get; set; }
 }

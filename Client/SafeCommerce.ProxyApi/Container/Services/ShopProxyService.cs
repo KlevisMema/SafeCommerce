@@ -189,6 +189,90 @@ public class ShopProxyService
         }
     }
 
+    public async Task<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>
+    GetMembersOfTheShop
+    (
+        Guid shopId,
+        Guid ownerId,
+        string userIp,
+        string jwtToken
+    )
+    {
+        HttpResponseMessage response = new();
+
+        try
+        {
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(ownerId), ownerId.ToString()),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken)
+            );
+
+            HttpClient? httpClient = API_Helper_HttpClient.CreateClientInstance
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi()
+            );
+
+            string? requestUrl = $"{BaseRoute.RouteShopForClient}{Route_ShopRoutes.GetMembersOfTheShop
+                                                            .Replace("{shopId}", shopId.ToString())
+                                                            .Replace("{userId}", ownerId.ToString())}";
+
+            HttpRequestMessage? requestMessage = new(HttpMethod.Get, requestUrl);
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp)
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            string? responseContent = await response.Content.ReadAsStringAsync();
+
+            Util_GenericResponse<IEnumerable<DTO_ShopMembers>> readResult = JsonSerializer.Deserialize<Util_GenericResponse<IEnumerable<DTO_ShopMembers>>>
+            (
+                responseContent,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            ) ?? throw new ArgumentNullException(ClientUtil_ExceptionResponse.ArgumentNullException);
+
+            return readResult;
+        }
+        catch (ArgumentNullException argException)
+        {
+            if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
+            {
+                return new Util_GenericResponse<IEnumerable<DTO_ShopMembers>>()
+                {
+                    Message = argException.Message,
+                    Errors = null,
+                    StatusCode = response.StatusCode,
+                    Succsess = false,
+                    Value = null
+                };
+            }
+            else
+                throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Exception in GetMembersOfTheShop.");
+
+            return new Util_GenericResponse<IEnumerable<DTO_ShopMembers>>
+            {
+                Errors = null,
+                Message = ClientUtil_ExceptionResponse.GeneralMessage,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null,
+            };
+        }
+    }
+
     public async Task<Util_GenericResponse<IEnumerable<DTO_Shop>>>
     GetPublicSharedShops
     (

@@ -52,6 +52,9 @@
         </ToolBarContent>
 
         <Columns>
+            @{
+                
+            }
             <PropertyColumn Property="item => item.ItemId" Hidden="true" />
             <PropertyColumn Property="item => item.ShopId" Hidden="true" />
             <PropertyColumn Property="item => item.OwnerId" Hidden="true" />
@@ -59,7 +62,11 @@
             <PropertyColumn Property="item => item.Name" Title="Item Name" Hidden="false" Sortable="true" Filterable="true" />
             <PropertyColumn Property="item => item.Description" Title="Description" Hidden="false" Sortable="true" Filterable="true" />
             <PropertyColumn Property="item => item.Price" Title="Price" Hidden="false" Sortable="true" Filterable="true" />
-            <PropertyColumn Property="item => item.Picture" Title="Picture" Hidden="false" />
+            <PropertyColumn Property="item => item.Picture" Title="Picture" Hidden="false">
+                <CellTemplate>
+                     <MudImage Src="@("data:image/*;base64," + context.Item.Picture)" Elevation="3" Width="50" Fluid="true" />
+                </CellTemplate>
+            </PropertyColumn>
             <PropertyColumn Property="item => item.OwnerName" Title="Owner Name" Hidden="false" Sortable="true" Filterable="true" />
             <PropertyColumn Property="item => item.IsApproved" Title="Is Approved" Hidden="false" Sortable="true" Filterable="true" />
         </Columns>

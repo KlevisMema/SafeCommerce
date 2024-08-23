@@ -11,19 +11,11 @@ namespace SafeCommerce.Client.Shared.Components.Shop;
 public partial class ModeratorRoleShops
 {
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private IClientService_Shop ShopService { get; set; } = null!;
     [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
 
     private List<ClientDto_ShopForModeration> ShopsForModerations { get; set; } = [];
-    private bool ApproveShop { get; set; }
-    private bool _open;
-    private bool _processing = false;
-
-    private void ToggleOpen(bool approveShop)
-    {
-        this.ApproveShop = approveShop;
-        this._open = !this._open;
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -33,28 +25,33 @@ public partial class ModeratorRoleShops
 
             if (getShopsForModeration.Succsess)
                 this.ShopsForModerations = getShopsForModeration.Value!.ToList();
+            else
+                _snackbar.Add(getShopsForModeration.Message, Severity.Error, config => { config.CloseAfterNavigation = true; });
         }
     }
+    private async Task
+    ToggleOpenDialogModration
+    (
+        bool approveShop,
+        ClientDto_ShopForModeration dto_ShopForModeration
+    )
+    {
+        var parameters = new DialogParameters
+        {
+            { "IsApproved", approveShop },
+            { "Shop", dto_ShopForModeration },
+            { "OnShopModerated", EventCallback.Factory.Create(this, (ClientDto_ShopForModeration shop) => OnShopModerated(shop)) }
+        };
 
-    private async Task ModerateShop
+        var dialog = await DialogService.ShowAsync<ModerateShopConfirmation>("", parameters, DialogHelper.SimpleDialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task OnShopModerated
     (
         ClientDto_ShopForModeration shop
     )
     {
-        _processing = true;
-        await Task.Delay(1000);
-
-        var moderaionResult = await ShopService.ModerateShop(new ClientDto_ModerateShop { Approved = ApproveShop, ShopId = shop.ShopId });
-
-        if (moderaionResult.Succsess)
-        {
-            ShopsForModerations.Remove(shop);
-            _snackbar.Add("Shop moderated succsessfully", Severity.Success, config => { config.CloseAfterNavigation = true; });
-        }
-        else
-            _snackbar.Add(moderaionResult.Message, Severity.Error, config => { config.CloseAfterNavigation = true; });
-
-        _processing = false;
-        this._open = !this._open;
+        ShopsForModerations.Remove(shop);
     }
 }

@@ -8,7 +8,7 @@ public class ClientDto_CreateItemWithAllKeys
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string EncryptedPrice { get; set; } = string.Empty;
-    public byte[]? Picture { get; set; }
+    public string? Picture { get; set; }
 
     public Guid ShopId { get; set; }
 

@@ -81,8 +81,8 @@ public partial class CreateItemForm
         if (file is not null)
         {
             ImageFile = file;
-            CreateItem.Picture = await ConvertToByteArrayAsync(file);
-            imagePreview = await ConvertToBase64StringAsync(file);
+            CreateItem.Picture = await ConvertToBase64StringAsync(file);
+            imagePreview = $"data:{file.ContentType};base64," + await ConvertToBase64StringAsync(file);
         }
 
         StateHasChanged();
@@ -124,6 +124,7 @@ public partial class CreateItemForm
         switch (CreateItem.ItemShareOption)
         {
             case ItemShareOption.Shop:
+                await ShareItemToShop();
                 break;
             case ItemShareOption.ToUser:
                 await ShareItemToUser();
@@ -139,9 +140,133 @@ public partial class CreateItemForm
     }
 
     private async Task
+    ShareItemToShop()
+    {
+        string? userId = await LocalStorageService.GetItemAsStringAsync("Id");
+
+        if (userId == null)
+        {
+            Snackbar.Add("Something wen't wrong, please log in again!", Severity.Error, config =>
+            {
+                config.CloseAfterNavigation = true;
+                config.VisibleStateDuration = 3000;
+            });
+
+            await LogOutHelper.LogOut(NavigationManager, LocalStorageService, AuthenticationService);
+            return;
+        }
+
+        var selectedShop = ListShops.FirstOrDefault(x => x.ShopId == CreateItem.ShopId);
+
+        if (selectedShop == null) {
+            Snackbar.Add("Please select a shop again", Severity.Warning, config =>
+            {
+                config.CloseAfterNavigation = true;
+                config.VisibleStateDuration = 3000;
+            });
+
+            return;
+        }
+
+        if (!selectedShop.MakePublic && !selectedShop.IsPublic)
+        {
+            await PrivateShop(userId);
+        }
+        else
+        {
+            await PublicShop();
+        }
+    }
+
+    private async Task
+    PrivateShop
+    (
+        string userId
+    )
+    {
+        List<ClientDto_ShopMembers> verifiedMembers = await GetVerifiedMembers();
+
+        ClientDto_CreateItemWithAllKeys? myEncryptedItem = await JsRuntime.InvokeAsync<ClientDto_CreateItemWithAllKeys>("encryptItemData", CreateItem, userId);
+        
+        if (myEncryptedItem == null)
+        {
+
+            Snackbar.Add("Something wen't wrong, item could not be encrypted try again", Severity.Error, config =>
+            {
+                config.CloseAfterNavigation = true;
+                config.VisibleStateDuration = 3000;
+            });
+
+            return;
+        }
+
+        CreateItem.ShopId = myEncryptedItem.ShopId;
+
+        CreateItem.Picture = myEncryptedItem.Picture;
+        CreateItem.Name = myEncryptedItem.Name;
+        CreateItem.Price = 0;
+        CreateItem.Description = myEncryptedItem.Description;
+        CreateItem.EncryptedPrice = myEncryptedItem.EncryptedPrice;
+
+        CreateItem.DataNonce = myEncryptedItem.DataNonce;
+        CreateItem.EncryptedKey = myEncryptedItem.EncryptedKey;
+        CreateItem.SignatureOfKey = myEncryptedItem.SignatureOfKey;
+        CreateItem.SigningPublicKey = myEncryptedItem.SigningPublicKey;
+        CreateItem.EncryptedKeyNonce = myEncryptedItem.EncryptedKeyNonce;
+
+        CreateItem.ItemShareOption = myEncryptedItem.ItemShareOption;
+
+        CreateItem.ShareItemToPrivateShop = new List<ClientDto_ShareItem>();
+
+        foreach (var member in verifiedMembers)
+        {
+            ClientDto_ShareItem? shareItemWithUser = await JsRuntime.InvokeAsync<ClientDto_ShareItem>("shareItemToUser", member.PublicKey, myEncryptedItem.NonEncryptedKey, userId);
+            shareItemWithUser.UserId = member.UserId;
+            shareItemWithUser.ShopId = CreateItem.ShopId;
+            CreateItem.ShareItemToPrivateShop.Add(shareItemWithUser);
+        }
+
+        CreateItem.DTO_ShareItem = null;
+
+        await SubmitForm();
+    }
+
+    private async Task<List<ClientDto_ShopMembers>> 
+    GetVerifiedMembers()
+    {
+        var shopMembers = await ShopService.GetMembersOfTheShop(CreateItem.ShopId);
+
+        List<ClientDto_ShopMembers> verifiedMembers = new();
+
+        if (shopMembers.Succsess && shopMembers.Value is not null)
+        {
+            foreach (var member in shopMembers.Value)
+            {
+                bool verified = await JsRuntime.InvokeAsync<bool>("verifyPublicKey", member.PublicKey, member.SigningPublicKey, member.Signature);
+
+                if (verified)
+                    verifiedMembers.Add(member);
+            }
+        }
+
+        return verifiedMembers;
+    }
+
+    private async Task
+    PublicShop()
+    {
+        CreateItem.ShareItemToPrivateShop = null;
+        CreateItem.DTO_ShareItem = null;
+        CreateItem.EncryptedPrice = null;
+
+        await SubmitForm();
+    }
+
+    private async Task
     ShareItemToEveryone()
     {
         CreateItem.DTO_ShareItem = null;
+        CreateItem.ShareItemToPrivateShop = null;
         await SubmitForm();
     }
 
@@ -205,6 +330,7 @@ public partial class CreateItemForm
 
         CreateItem.ShopId = myEncryptedItem.ShopId;
 
+        CreateItem.Price = null;
         CreateItem.Picture = myEncryptedItem.Picture;
         CreateItem.Name = myEncryptedItem.Name;
         CreateItem.Description = myEncryptedItem.Description;
@@ -219,6 +345,8 @@ public partial class CreateItemForm
         CreateItem.ItemShareOption = myEncryptedItem.ItemShareOption;
 
         CreateItem.DTO_ShareItem = shareItemWithUser;
+
+        CreateItem.ShareItemToPrivateShop = null;
 
         await SubmitForm();
     }
@@ -320,6 +448,6 @@ public partial class CreateItemForm
         using var memoryStream = new MemoryStream();
         await file.OpenReadStream().CopyToAsync(memoryStream);
         byte[] fileBytes = memoryStream.ToArray();
-        return $"data:{file.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+        return Convert.ToBase64String(fileBytes);
     }
 }

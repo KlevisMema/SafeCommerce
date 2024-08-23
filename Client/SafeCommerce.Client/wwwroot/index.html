@@ -126,7 +126,7 @@
             const data = await getUserKeyPairFromDatabase(userId);
 
 
-            if (!data) 
+            if (!data)
                 throw new Error('Key pair not found for the user.');
 
             const symmetricKey = await generateSymmetricKey();
@@ -180,9 +180,8 @@
         async function decryptMyShopData(encryptedShop, userId) {
             const obj = await getUserKeyPairFromDatabase(userId);
 
-            if (!obj) {
+            if (!obj)
                 throw new Error('Key pair not found.');
-            }
 
             const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(encryptedShop.encryptedKey, obj.keyPair.privateKey, obj.keyPair.publicKey, encryptedShop.encryptedKeyNonce);
 
@@ -210,9 +209,8 @@
         async function decryptShopData(encryptedShop, userId) {
             const obj = await getUserKeyPairFromDatabase(userId);
 
-            if (!obj) {
+            if (!obj)
                 throw new Error('Key pair not found.');
-            }
 
             const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(encryptedShop.encryptedKey, obj.keyPair.privateKey, encryptedShop.ownerPublicKey, encryptedShop.encryptedKeyNonce);
 
@@ -349,9 +347,9 @@
         async function encryptItemData(item, userId) {
             const data = await getUserKeyPairFromDatabase(userId);
 
-            if (!data) 
+            if (!data)
                 throw new Error('Key pair not found for the user.');
-            
+
             const symmetricKeyForItem = await generateSymmetricKey();
             const nonceForItemData = crypto.getRandomValues(new Uint8Array(12));
 
@@ -371,7 +369,7 @@
                 Description: encryptedDescription.encryptedData,
                 Price: item.price,
                 EncryptedPrice: encryptedPrice.encryptedData,
-                Picture: nacl.util.decodeBase64(encryptedPicture.encryptedData),
+                Picture: encryptedPicture.encryptedData,
                 ShopId: item.shopId,
                 DataNonce: nacl.util.encodeBase64(nonceForItemData),
                 EncryptedKey: encryptedSymmetricItemKey.encryptedSymmetricKeyBase64,
@@ -394,6 +392,86 @@
                 EncryptedKeyNonce: encryptedSymmetricKey.nonceBase64,
                 EncryptedKey: encryptedSymmetricKey.encryptedSymmetricKeyBase64
             }
+        }
+
+        async function decryptMyItemData(encryptedItem, userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (!obj)
+                throw new Error('Key pair not found.');
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(encryptedItem.encryptedKey, obj.keyPair.privateKey, obj.keyPair.publicKey, encryptedItem.encryptedKeyNonce);
+            const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
+            const nonce = nacl.util.decodeBase64(encryptedItem.dataNonce);
+
+            const name = await decryptDataWithSymmetricKey(encryptedItem.name, symmetricKey, nonce);
+            const description = await decryptDataWithSymmetricKey(encryptedItem.description, symmetricKey, nonce);
+            const price = await decryptDataWithSymmetricKey(encryptedItem.encryptedPrice, symmetricKey, nonce);
+            const picture = await decryptDataWithSymmetricKey(encryptedItem.picture, symmetricKey, nonce);
+
+            return {
+                Name: name,
+                Description: description,
+                PriceDecrypted: price,
+                Picture: picture,
+                EncryptedPrice: encryptedItem.encryptedPrice,
+                ItemId: encryptedItem.itemId,
+                ShopId: encryptedItem.shopId,
+                OwnerId: encryptedItem.ownerId,
+                OwnerName: encryptedItem.ownerName,
+                OwnerPublicKey: encryptedItem.ownerPublicKey,
+                OwnerSignature: encryptedItem.ownerSignature,
+                OwnerSigningPublicKey: encryptedItem.ownerSigningPublicKey,
+                IsApproved: encryptedItem.isApproved,
+                IsPublic: encryptedItem.isPublic,
+                MakePublic: encryptedItem.makePublic,
+                EncryptedKey: encryptedItem.encryptedKey,
+                SignatureOfKey: encryptedItem.signatureOfKey,
+                SigningPublicKey: encryptedItem.signingPublicKey,
+                EncryptedKeyNonce: encryptedItem.encryptedKeyNonce,
+                DataNonce: encryptedItem.dataNonce,
+            };
+        }
+
+        async function decryptItemData(encryptedItem, userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (!obj)
+                throw new Error('Key pair not found.');
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(encryptedItem.encryptedKey, obj.keyPair.privateKey, encryptedItem.ownerPublicKey, encryptedItem.encryptedKeyNonce);
+
+            const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
+
+            const nonce = nacl.util.decodeBase64(encryptedItem.dataNonce);
+
+            const name = await decryptDataWithSymmetricKey(encryptedItem.name, symmetricKey, nonce);
+            const description = await decryptDataWithSymmetricKey(encryptedItem.description, symmetricKey, nonce);
+            const price = await decryptDataWithSymmetricKey(encryptedItem.encryptedPrice, symmetricKey, nonce);
+            const picture = await decryptDataWithSymmetricKey(encryptedItem.picture, symmetricKey, nonce);
+
+            return {
+                Name: name,
+                Description: description,
+                PriceDecrypted: price,
+                Picture: picture,
+                EncryptedPrice: encryptedItem.encryptedPrice,
+                ItemId: encryptedItem.itemId,
+                ShopId: encryptedItem.shopId,
+                OwnerId: encryptedItem.ownerId,
+                OwnerName: encryptedItem.ownerName,
+                OwnerPublicKey: encryptedItem.ownerPublicKey,
+                OwnerSignature: encryptedItem.ownerSignature,
+                OwnerSigningPublicKey: encryptedItem.ownerSigningPublicKey,
+                IsApproved: encryptedItem.isApproved,
+                IsPublic: encryptedItem.isPublic,
+                MakePublic: encryptedItem.makePublic,
+                EncryptedKey: encryptedItem.encryptedKey,
+                SignatureOfKey: encryptedItem.signatureOfKey,
+                SigningPublicKey: encryptedItem.signingPublicKey,
+                EncryptedKeyNonce: encryptedItem.encryptedKeyNonce,
+                DataNonce: encryptedItem.dataNonce,
+            };
         }
     </script>
 

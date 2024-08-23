@@ -15,8 +15,10 @@ public class DTO_CreateItem
 
     [Required]
     [Range(0, 100000)]
-    public decimal Price { get; set; }
-    public byte[]? Picture { get; set; }
+    public decimal? Price { get; set; }
+    public string? EncryptedPrice { get; set; }
+
+    public string? Picture { get; set; }
     public Guid? ShopId { get; set; }
 
     public string? EncryptedKey { get; set; }
@@ -28,4 +30,5 @@ public class DTO_CreateItem
     public ItemShareOption? ItemShareOption { get; set; }
 
     public DTO_ShareItem? DTO_ShareItem { get; set; }
+    public List<DTO_ShareItem>? ShareItemToPrivateShop { get; set; }
 }

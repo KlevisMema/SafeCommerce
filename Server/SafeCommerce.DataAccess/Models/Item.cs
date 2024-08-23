@@ -11,7 +11,7 @@ public class Item : Base
     public string Description { get; set; } = string.Empty;
     public decimal? Price { get; set; }
     public string? EncryptedPrice { get; set; }
-    public byte[]? Picture { get; set; }
+    public string? Picture { get; set; }
 
     public Guid? ShopId { get; set; }
     public Shop? Shop { get; set; }
