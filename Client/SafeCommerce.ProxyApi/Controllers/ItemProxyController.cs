@@ -15,13 +15,14 @@ namespace SafeCommerce.ProxyApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(AuthenticationSchemes = "Default", Roles = "User")]
+[Authorize(AuthenticationSchemes = "Default")]
 public class ItemProxyController(
     IItemProxyService _itemProxyService,
     IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions
 ) : ControllerBase
 {
     #region Get
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.ProxyGetItemDetails)]
     public async Task<ActionResult<Util_GenericResponse<DTO_Item>>>
     GetItemDetails
@@ -40,8 +41,9 @@ public class ItemProxyController(
         return Util_GenericControllerResponse<DTO_Item>.ControllerResponse(result);
     }
 
+    [Authorize(Roles = "Moderator")]
     [HttpGet(Route_ItemRoutes.PeoxyGetItemsForModeration)]
-    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_Item>>>>
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>>
     GetItemsSubjectForModeration()
     {
         var result = await _itemProxyService.GetItemsSubjectForModeration
@@ -51,9 +53,10 @@ public class ItemProxyController(
             API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)
         );
 
-        return Util_GenericControllerResponse<IEnumerable<DTO_Item>>.ControllerResponse(result);
+        return Util_GenericControllerResponse<IEnumerable<DTO_ItemForModeration>>.ControllerResponse(result);
     }
 
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.ProxyGetItemsByShopId)]
     public async Task<ActionResult<Util_GenericResponse<List<DTO_Item>>>>
     GetItemsByShopId
@@ -72,6 +75,7 @@ public class ItemProxyController(
         return Util_GenericControllerResponse<List<DTO_Item>>.ControllerResponse(result);
     }
 
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.ProxyGetUserItems)]
     public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_Item>>>>
     GetUserItems()
@@ -88,6 +92,7 @@ public class ItemProxyController(
     #endregion
 
     #region Post
+    [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.ProxyCreateItem)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     CreateItem
@@ -111,6 +116,7 @@ public class ItemProxyController(
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.ProxyShareItem)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ShareItem
@@ -132,6 +138,7 @@ public class ItemProxyController(
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
+    [Authorize(Roles = "Moderator")]
     [HttpPost(Route_ItemRoutes.ProxyModerateItem)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ModerateItem
@@ -155,6 +162,7 @@ public class ItemProxyController(
     #endregion
 
     #region Put
+    [Authorize(Roles = "User")]
     [HttpPut(Route_ItemRoutes.ProxyEditItem)]
     public async Task<ActionResult<Util_GenericResponse<DTO_Item>>>
     EditItem
@@ -182,6 +190,7 @@ public class ItemProxyController(
     #endregion
 
     #region Delete
+    [Authorize(Roles = "User")]
     [HttpDelete(Route_ItemRoutes.ProxyDeleteItem)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeleteItem

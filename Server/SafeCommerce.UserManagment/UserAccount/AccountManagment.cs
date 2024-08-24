@@ -1369,7 +1369,7 @@ public class AccountManagment
         {
             List<ApplicationUser>? users = await _db.Users.Include(x => x.Shops)
                                        .ThenInclude(x => x.ShopShares)
-                                       .Where(x => x.UserName!.Contains(userName) && !x.IsDeleted && x.EmailConfirmed && x.Id != userId)
+                                       .Where(x => x.UserName!.Contains(userName) && x.Id != userId && !x.IsDeleted && x.EmailConfirmed && x.Id != userId && !String.IsNullOrEmpty(x.PublicKey) && !String.IsNullOrEmpty(x.Signature) && !String.IsNullOrEmpty(x.SigningPublicKey))
                                        .ToListAsync();
 
             List<ApplicationUser> usersInRoleUser = [];

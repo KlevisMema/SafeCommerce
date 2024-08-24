@@ -35,7 +35,7 @@ public interface IItemProxyService
         string jwtToken
     );
 
-    Task<Util_GenericResponse<IEnumerable<DTO_Item>>>
+    Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>
     GetItemsSubjectForModeration
     (
         Guid moderatorId,

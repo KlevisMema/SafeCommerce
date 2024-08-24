@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Utilities.Responses;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Invitation;
 using SafeCommerce.BLL.Interfaces;
@@ -639,6 +639,23 @@ public class ShopInvitations
                 invitingUserId,
                 invitedUserId
             );
+
+            return false;
+        }
+
+        if (String.IsNullOrEmpty(invitedUser.PublicKey) || String.IsNullOrEmpty(invitedUser.Signature) || String.IsNullOrEmpty(invitedUser.SigningPublicKey))
+        {
+            _logger.Log
+           (
+               LogLevel.Error,
+               """
+                    [RESULT] : [IP] {IP} inviting user with [ID] {ID} send an invitation to user with id {invitedUser},
+                    who doesn't have cryptohraphic keys.
+                 """,
+               await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+               invitingUserId,
+               invitedUserId
+           );
 
             return false;
         }

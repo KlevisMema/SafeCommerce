@@ -1,0 +1,43 @@
+﻿<style class="apply-nonce">
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+    }
+
+    .mud-dialog {
+        width: 400px !important;
+    }
+
+        .mud-dialog .mud-dialog-actions {
+            padding: 8px 24px 16px 24px !important;
+        }
+
+        .mud-dialog .mud-dialog-title {
+            padding: 16px 24px 8px 24px !important;
+        }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
+            Moderate Item
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        Are you sure you <b style="color: #00838F">@this.text</b> this item
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_processing" Style="@($"background:{Colors.Cyan.Darken3};")" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="ModerateShop">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+            }
+            else
+            {
+                <MudText Style="@($"color:white;")">Yes</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

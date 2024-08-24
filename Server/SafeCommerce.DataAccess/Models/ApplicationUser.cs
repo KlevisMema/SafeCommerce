@@ -10,7 +10,7 @@
 */
 
 using SafeCommerce.DataAccess.BaseModels;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 
 namespace SafeCommerce.DataAccess.Models;
 

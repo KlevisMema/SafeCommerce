@@ -1,0 +1,83 @@
+﻿@using SafeCommerce.ClientDTO.Item
+@using SafeCommerce.ClientDTO.Shop
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
+    <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanel Text="Shops" Expanded="true">
+            <MudGrid>
+                @foreach (ClientDto_ShopForModeration shop in ShopsForModerations)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Class="shop-card private-shop-card">
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">@shop.Name</MudText>
+                                <MudText Typo="Typo.body2">@shop.Description</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudTooltip Duration="1000" Text="Duration: 1000" Arrow="true" Color="Color.Primary" Placement="Placement.Start">
+                                    <ChildContent>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info" />
+                                    </ChildContent>
+                                    <TooltipContent>
+                                        <MudPaper Elevation="3" Class="pa-4">
+                                            <MudText Typo="Typo.subtitle1">Shop Details</MudText>
+                                            <MudDivider Class="my-2" />
+                                            <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.DateRange" /> Created At: @($" {shop.CreatedAt.ToShortDateString()}")</MudText>
+                                            <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.VerifiedUser" /> Created By: @($" {shop.OwnerName}")</MudText>
+                                        </MudPaper>
+                                    </TooltipContent>
+                                </MudTooltip>
+                                <MudTooltip Text="Accept">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenWith" Color="Color.Primary" OnClick="@(() => ToggleOpenDialogModration(true, shop, null))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Reject">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Secondary" OnClick="@(() => ToggleOpenDialogModration(false, shop, null))" />
+                                </MudTooltip>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudExpansionPanel>
+        <MudExpansionPanel Text="Items" Expanded="true">
+            <MudGrid Spacing="3">
+                @foreach (ClientDto_ItemForModeration item in ItemsForModerations)
+                {
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard>
+                            <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">Name: @item.Name</MudText>
+                                <MudText Typo="Typo.subtitle2">Price: $@(item.Price!.Value.ToString("0.00"))</MudText>
+                                <MudText Typo="Typo.body2">
+                                    Description: @item.Description
+                                </MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudTooltip Duration="1000" Text="Duration: 1000" Arrow="true" Color="Color.Primary" Placement="Placement.Start">
+                                    <ChildContent>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info" />
+                                    </ChildContent>
+                                    <TooltipContent>
+                                        <MudPaper Elevation="3" Class="pa-4">
+                                            <MudText Typo="Typo.subtitle1">Item Details</MudText>
+                                            <MudDivider Class="my-2" />
+                                            <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.DateRange" /> Created At: @($" {item.CreatedAt.ToShortDateString()}")</MudText>
+                                            <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.VerifiedUser" /> Created By: @($" {item.OwnerName}")</MudText>
+                                        </MudPaper>
+                                    </TooltipContent>
+                                </MudTooltip>
+                                <MudTooltip Text="Accept">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenWith" Color="Color.Primary" OnClick="@(() => ToggleOpenDialogModration(true, null, item))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Reject">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Color="Color.Secondary" OnClick="@(() => ToggleOpenDialogModration(false, null, item))" />
+                                </MudTooltip>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+</MudContainer>

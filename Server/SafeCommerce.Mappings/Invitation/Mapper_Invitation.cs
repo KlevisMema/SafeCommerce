@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.DataTransormObject.Invitation;
 
 

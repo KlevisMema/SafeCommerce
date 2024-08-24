@@ -7,7 +7,7 @@ public class Mapper_Moderation : Profile
 {
     public Mapper_Moderation()
     {
-        CreateMap<SafeShare.DataAccessLayer.Models.ModerationHistory, DTO_ModerationHistory>()
+        CreateMap<SafeCommerce.DataAccessLayer.Models.ModerationHistory, DTO_ModerationHistory>()
             .ForMember(dest => dest.ShopId, opt => opt.MapFrom(src => src.ShopId))
             .ForMember(dest => dest.ModeratorId, opt => opt.MapFrom(src => src.ModeratorId))
             .ForMember(dest => dest.Approved, opt => opt.MapFrom(src => src.Approved))

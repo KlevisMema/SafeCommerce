@@ -1,8 +1,8 @@
 ﻿using SafeCommerce.DataAccess.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace SafeShare.DataAccessLayer.Models;
-
+namespace SafeCommerce.DataAccessLayer.Models;
+    
 public class ItemShare
 {
     [Key]

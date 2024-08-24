@@ -51,6 +51,6 @@ public interface IClientService_Item
         ClientDto_ShareItem shareItemDto
     );
 
-    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>>
+    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>>
     GetItemsSubjectForModeration();
 }

@@ -30,7 +30,6 @@ namespace SafeCommerce.API.Controllers;
 /// Initializes a new instance of <see cref="ItemController"/>
 /// </remarks>
 /// <param name="mediator">The instance of mediator used to send commands and queries</param>
-[Authorize(Roles = "User")]
 [ServiceFilter(typeof(VerifyUser))]
 public class ItemController(IMediator mediator) : BaseController(mediator)
 {
@@ -41,6 +40,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user requesting item details.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>Detailed information about the specified item.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.GetItemDetails)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
@@ -64,6 +64,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="createItemDto">The details of the item to be created.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the item was successfully created.</returns>
+    [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.CreateItem)]
     [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
@@ -92,6 +93,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="editItemDto">The new details to update the item with.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the item was successfully edited.</returns>
+    [Authorize(Roles = "User")]
     [HttpPut(Route_ItemRoutes.EditItem)]
     [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
@@ -120,6 +122,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user deleting the item.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the item was successfully deleted.</returns>
+    [Authorize(Roles = "User")]
     [HttpDelete(Route_ItemRoutes.DeleteItem)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -144,6 +147,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user requesting the items.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A list of items associated with the shop.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.GetItemsByShopId)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<List<DTO_Item>>))]
@@ -166,6 +170,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <param name="userId">The id of the user making the request.</param>
     /// <returns>A boolean value indicating whether the item was successfully shared.</returns>
+    [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.ShareItem)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -219,12 +224,12 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the items were retrieved succsessfully.</returns>
     [Authorize(Roles = "Moderator")]
-    [HttpPost(Route_ItemRoutes.GetItemsForModeration)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
+    [HttpGet(Route_ItemRoutes.GetItemsForModeration)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
-    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_Item>>>>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>>
     GetItemsSubjectForModeration
     (
         [FromRoute] Guid userId,
@@ -243,6 +248,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user whose items are to be retrieved.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A list of items associated with the user.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.GetUserItems)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]

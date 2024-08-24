@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.Context;
-using SafeShare.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Responses;
+using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Shop;
 
@@ -149,7 +149,8 @@ namespace SafeCommerce.BLL.RepositoryService
                     return Util_GenericResponse<bool>.Response(false, false, "Shop not found or no permission to delete.", null, HttpStatusCode.NotFound);
                 }
 
-                _db.ModerationHistories.Remove(shop.ModerationHistory!);
+                if (shop.ModerationHistory is not null)
+                    _db.ModerationHistories.Remove(shop.ModerationHistory);
 
                 _db.Shops.Remove(shop);
                 await _db.SaveChangesAsync(cancellationToken);
@@ -439,6 +440,8 @@ namespace SafeCommerce.BLL.RepositoryService
             CancellationToken cancellationToken = default
         )
         {
+            using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
             try
             {
                 ApplicationUser? user = await _db.Users.FirstOrDefaultAsync(m => m.Id == moderatorId.ToString(), cancellationToken);
@@ -485,16 +488,20 @@ namespace SafeCommerce.BLL.RepositoryService
                     ItemId = null,
                     ModeratorId = moderatorId.ToString(),
                     Approved = moderateShop.Approved,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     ShopId = moderateShop.ShopId,
                 });
 
                 await _db.SaveChangesAsync(cancellationToken);
 
+                await transaction.CommitAsync(cancellationToken);
+
                 return Util_GenericResponse<bool>.Response(true, true, "Shop moderated successfully.", null, System.Net.HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
+
                 return await Util_LogsHelper<bool, ShopService>.ReturnInternalServerError(
                     ex,
                     _logger,
@@ -512,6 +519,8 @@ namespace SafeCommerce.BLL.RepositoryService
             CancellationToken cancellationToken = default
         )
         {
+            using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
             try
             {
                 var owner = await userManager.FindByIdAsync(ownerId.ToString());
@@ -579,10 +588,14 @@ namespace SafeCommerce.BLL.RepositoryService
 
                 await _db.SaveChangesAsync();
 
+                await transaction.CommitAsync(cancellationToken);
+
                 return Util_GenericResponse<bool>.Response(true, true, "User removed succsessfully", null, System.Net.HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
+
                 return await Util_LogsHelper<bool, ShopService>.ReturnInternalServerError(
                     ex,
                     _logger,

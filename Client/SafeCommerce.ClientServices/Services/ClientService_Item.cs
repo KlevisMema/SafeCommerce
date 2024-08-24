@@ -180,7 +180,7 @@ public class ClientService_Item
         }
     }
 
-    public async Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>>
+    public async Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>>
     GetItemsSubjectForModeration()
     {
         HttpResponseMessage response = new();
@@ -193,7 +193,7 @@ public class ClientService_Item
 
             string? responseContent = await response.Content.ReadAsStringAsync();
 
-            ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>? readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>>
+            ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>? readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>>
             (
                 responseContent, new JsonSerializerOptions
                 {
@@ -207,7 +207,7 @@ public class ClientService_Item
         {
             if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
             {
-                return new ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>()
+                return new ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>()
                 {
                     Message = argException.Message,
                     Errors = null,
@@ -221,7 +221,7 @@ public class ClientService_Item
         }
         catch (Exception)
         {
-            return new ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>()
+            return new ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>()
             {
                 Message = ClientUtil_ExceptionResponse.GeneralMessage,
                 Errors = null,

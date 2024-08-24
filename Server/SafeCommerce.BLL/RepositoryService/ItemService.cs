@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Utilities.Responses;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Item;
 using SafeCommerce.DataTransormObject.Moderation;
@@ -577,7 +577,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetItemsSubjectForModeration
+    public async Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>> 
+    GetItemsSubjectForModeration
     (
         Guid modeatorId,
         CancellationToken cancellationToken
@@ -596,7 +597,7 @@ public class ItemService
                 """,
                  modeatorId);
 
-                return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
             }
 
             bool isModerator = await userManager.IsInRoleAsync(user, Role.Moderator.ToString());
@@ -610,10 +611,12 @@ public class ItemService
                 """,
                  modeatorId);
 
-                return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(null, false, "User is not moderator", null, System.Net.HttpStatusCode.Unauthorized);
+                return Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>.Response(null, false, "User is not moderator", null, System.Net.HttpStatusCode.Unauthorized);
             }
 
-            var items = await _db.Items.Where(p => !p.IsPublic && p.MakePublic && !p.IsApproved).Select(i => _mapper.Map<DTO_Item>(i)).ToListAsync(cancellationToken);
+            var items = await _db.Items.Include(o => o.Owner)
+                                       .Include(sh => sh.Shop)
+                                       .Where(p => !p.IsPublic && p.MakePublic && !p.IsApproved).Select(i => _mapper.Map<DTO_ItemForModeration>(i)).ToListAsync(cancellationToken);
 
             _logger.LogInformation(
                 """
@@ -622,11 +625,11 @@ public class ItemService
                 """,
                  modeatorId);
 
-            return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(items, true, "Items retrieved successfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>.Response(items, true, "Items retrieved successfully", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<IEnumerable<DTO_Item>, ItemService>.ReturnInternalServerError(
+            return await Util_LogsHelper<IEnumerable<DTO_ItemForModeration>, ItemService>.ReturnInternalServerError(
                 ex,
                 _logger,
                 $"""
@@ -700,12 +703,45 @@ public class ItemService
         CancellationToken cancellationToken
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
         try
         {
+            ApplicationUser? user = await _db.Users.FirstOrDefaultAsync(m => m.Id == moderatorId.ToString(), cancellationToken);
+
+            if (user == null)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[ModerateItem Method] =>
+                        [RESULT]:  Moderator with id {userId} does not exists.
+                    """,
+                 moderatorId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            bool isModerator = await userManager.IsInRoleAsync(user, Role.Moderator.ToString());
+
+            if (!isModerator)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[ModerateItem Method] =>
+                        [RESULT]:  user with id {userId} tried to access moderator only content.
+                    """,
+                 moderatorId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "User is not moderator.", null, System.Net.HttpStatusCode.Unauthorized);
+            }
+
             var item = await _db.Items.FindAsync(moderateItemDto.ItemId);
 
             if (item == null)
                 return Util_GenericResponse<bool>.Response(false, false, "Item not found.", null, System.Net.HttpStatusCode.NotFound);
+
+            if (item.IsPublic)
+                return Util_GenericResponse<bool>.Response(false, false, "Item is already public.", null, System.Net.HttpStatusCode.BadRequest);
 
             item.IsApproved = moderateItemDto.Approved;
             item.IsPublic = moderateItemDto.Approved;
@@ -715,16 +751,20 @@ public class ItemService
                 ItemId = moderateItemDto.ItemId,
                 ModeratorId = moderatorId,
                 Approved = moderateItemDto.Approved,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ShopId = null
             });
 
             await _db.SaveChangesAsync(cancellationToken);
 
+            await transaction.CommitAsync(cancellationToken);
+
             return Util_GenericResponse<bool>.Response(true, true, "Item moderated successfully.", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync(cancellationToken);
+
             return await Util_LogsHelper<bool, ItemService>.ReturnInternalServerError(
                 ex,
                 _logger,

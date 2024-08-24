@@ -274,7 +274,7 @@ public class ItemProxyService
         }
     }
 
-    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>>
+    public async Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>
     GetItemsSubjectForModeration
     (
         Guid moderatorId,
@@ -314,7 +314,7 @@ public class ItemProxyService
 
             string? responseContent = await response.Content.ReadAsStringAsync();
 
-            Util_GenericResponse<IEnumerable<DTO_Item>> readResult = JsonSerializer.Deserialize<Util_GenericResponse<IEnumerable<DTO_Item>>>
+            Util_GenericResponse<IEnumerable<DTO_ItemForModeration>> readResult = JsonSerializer.Deserialize<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>
             (
                 responseContent,
                 new JsonSerializerOptions
@@ -329,7 +329,7 @@ public class ItemProxyService
         {
             if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
             {
-                return new Util_GenericResponse<IEnumerable<DTO_Item>>()
+                return new Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>()
                 {
                     Message = argException.Message,
                     Errors = null,
@@ -345,7 +345,7 @@ public class ItemProxyService
         {
             logger.LogCritical(ex, "Exception in GetItemsSubjectForModeration.");
 
-            return new Util_GenericResponse<IEnumerable<DTO_Item>>
+            return new Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>
             {
                 Errors = null,
                 Message = ClientUtil_ExceptionResponse.GeneralMessage,

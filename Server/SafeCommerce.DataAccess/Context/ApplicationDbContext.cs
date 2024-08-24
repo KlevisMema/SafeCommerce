@@ -5,7 +5,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using SafeCommerce.DataAccess.Models;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace SafeCommerce.DataAccess.Context;

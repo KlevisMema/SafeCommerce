@@ -22,6 +22,6 @@ public class MediatR_GetItemsSubjectForModerationQueryHandler
     {
         var itemsForModeration = await _service.GetItemsSubjectForModeration(request.ModeratorId, cancellationToken);
 
-        return Util_GenericControllerResponse<IEnumerable<DTO_Item>>.ControllerResponse(itemsForModeration);
+        return Util_GenericControllerResponse<IEnumerable<DTO_ItemForModeration>>.ControllerResponse(itemsForModeration);
     }
 }

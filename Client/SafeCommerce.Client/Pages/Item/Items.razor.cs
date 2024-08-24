@@ -44,7 +44,10 @@ public partial class Items
                             decryptedItem.Price = decimal.Parse(decryptedItem.PriceDecrypted);
                         }
                         else
+                        {
                             decryptedItem = await this.JsRuntime.InvokeAsync<ClientDto_Item>("decryptItemData", item, userId);
+                            decryptedItem.Price = decimal.Parse(decryptedItem.PriceDecrypted);
+                        }
 
                         this.ListItems.Add(decryptedItem);
                         continue;

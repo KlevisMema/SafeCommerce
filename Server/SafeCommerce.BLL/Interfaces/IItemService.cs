@@ -61,7 +61,7 @@ public interface IItemService
         CancellationToken cancellationToken = default
     );
 
-    Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetItemsSubjectForModeration
+    Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>> GetItemsSubjectForModeration
     (
         Guid moderatorId,
         CancellationToken cancellationToken = default
