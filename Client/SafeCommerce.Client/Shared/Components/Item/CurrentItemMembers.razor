@@ -1,0 +1,57 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudDivider Class="my-2" />
+        <MudPaper Width="400px">
+            <MudList T="List<string>">
+                <MudListItem>
+                    <MudGrid Justify="Justify.SpaceBetween" AlignItems="center">
+                        <MudItem xs="2">
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" />
+                        </MudItem>
+                        <MudItem xs="10">
+                            <MudText Typo="Typo.body1">@CurrentItemMembersList.First().UserName</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudListItem>
+
+                <MudDivider />
+
+                @foreach (var member in CurrentItemMembersList.Skip(1))
+                {
+                    <MudListItem>
+                        <MudGrid Justify="Justify.SpaceBetween" AlignItems="center">
+                            <MudItem xs="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" />
+                            </MudItem>
+                            @if (!ImOwner)
+                            {
+                                <MudItem xs="10">
+                                    <MudText Typo="Typo.body1">@member.UserName</MudText>
+                                </MudItem>
+                            }
+                            @if (ImOwner)
+                            {
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.body1">@member.UserName</MudText>
+                                </MudItem>
+
+                                <MudItem xs="4">
+                                    <MudButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => RemoveUserFromItem(member))" Variant="Variant.Outlined" Color="Color.Error">
+                                        @if (_processing)
+                                        {
+                                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Error" />
+                                        }
+                                        else
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Outlined.Delete"></MudIcon>
+                                        }
+                                    </MudButton>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+</MudDialog>

@@ -9,7 +9,9 @@ using SafeCommerce.DataTransormObject.Item;
 using SafeCommerce.ClientUtilities.Responses;
 using SafeCommerce.ClientServerShared.Routes;
 using SafeCommerce.ProxyApi.Container.Interfaces;
-using SafeCommerce.DataTransormObject.Moderation; 
+using SafeCommerce.DataTransormObject.Moderation;
+using SafeCommerce.DataTransormObject.Shop;
+
 #endregion
 
 namespace SafeCommerce.ProxyApi.Container.Services;
@@ -274,6 +276,87 @@ public class ItemProxyService
         }
     }
 
+    public async Task<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>
+    GetPublicSharedItems
+    (
+        Guid userId,
+        string userIp,
+        string jwtToken
+    )
+    {
+        HttpResponseMessage response = new();
+
+        try
+        {
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken)
+            );
+
+            HttpClient? httpClient = API_Helper_HttpClient.CreateClientInstance
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi()
+            );
+
+            string? requestUrl = $"{BaseRoute.RouteItemForClient}{Route_ItemRoutes.GetPublicSharedItems
+                                                                .Replace("{userId}", userId.ToString())}";
+
+            HttpRequestMessage? requestMessage = new(HttpMethod.Get, requestUrl);
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp)
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            string? responseContent = await response.Content.ReadAsStringAsync();
+
+            Util_GenericResponse<IEnumerable<DTO_PublicItem>> readResult = JsonSerializer.Deserialize<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>
+            (
+                responseContent,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            ) ?? throw new ArgumentNullException(ClientUtil_ExceptionResponse.ArgumentNullException);
+
+            return readResult;
+        }
+        catch (ArgumentNullException argException)
+        {
+            if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
+            {
+                return new Util_GenericResponse<IEnumerable<DTO_PublicItem>>()
+                {
+                    Message = argException.Message,
+                    Errors = null,
+                    StatusCode = response.StatusCode,
+                    Succsess = false,
+                    Value = null,
+                };
+            }
+            else
+                throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Exception in GetUserItems.");
+
+            return new Util_GenericResponse<IEnumerable<DTO_PublicItem>>
+            {
+                Errors = null,
+                Message = ClientUtil_ExceptionResponse.GeneralMessage,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null,
+            };
+        }
+    }
+
     public async Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>
     GetItemsSubjectForModeration
     (
@@ -355,10 +438,94 @@ public class ItemProxyService
             };
         }
     }
+
+    public async Task<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>
+    GetMembersOfTheItem
+    (
+        Guid itemId,
+        Guid ownerId,
+        string userIp,
+        string jwtToken
+    )
+    {
+        HttpResponseMessage response = new();
+
+        try
+        {
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(ownerId), ownerId.ToString()),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken)
+            );
+
+            HttpClient? httpClient = API_Helper_HttpClient.CreateClientInstance
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi()
+            );
+
+            string? requestUrl = $"{BaseRoute.RouteItemForClient}{Route_ShopRoutes.GetMembersOfTheItem
+                                                            .Replace("{itemId}", itemId.ToString())
+                                                            .Replace("{userId}", ownerId.ToString())}";
+
+            HttpRequestMessage? requestMessage = new(HttpMethod.Get, requestUrl);
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp)
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            string? responseContent = await response.Content.ReadAsStringAsync();
+
+            Util_GenericResponse<IEnumerable<DTO_ItemMembers>> readResult = JsonSerializer.Deserialize<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>
+            (
+                responseContent,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            ) ?? throw new ArgumentNullException(ClientUtil_ExceptionResponse.ArgumentNullException);
+
+            return readResult;
+        }
+        catch (ArgumentNullException argException)
+        {
+            if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
+            {
+                return new Util_GenericResponse<IEnumerable<DTO_ItemMembers>>()
+                {
+                    Message = argException.Message,
+                    Errors = null,
+                    StatusCode = response.StatusCode,
+                    Succsess = false,
+                    Value = null
+                };
+            }
+            else
+                throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Exception in GetMembersOfTheItem.");
+
+            return new Util_GenericResponse<IEnumerable<DTO_ItemMembers>>
+            {
+                Errors = null,
+                Message = ClientUtil_ExceptionResponse.GeneralMessage,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null,
+            };
+        }
+    }
     #endregion
 
     #region Post
-    public async Task<Util_GenericResponse<bool>>
+    public async Task<Util_GenericResponse<DTO_Item>>
     CreateItem
     (
         Guid ownerId,
@@ -413,7 +580,7 @@ public class ItemProxyService
 
                 string? responseContent = await response.Content.ReadAsStringAsync();
 
-                Util_GenericResponse<bool>? readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>
+                Util_GenericResponse<DTO_Item>? readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_Item>>
                 (
                     responseContent,
                     new JsonSerializerOptions
@@ -428,13 +595,13 @@ public class ItemProxyService
             {
                 if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
                 {
-                    return new Util_GenericResponse<bool>()
+                    return new Util_GenericResponse<DTO_Item>()
                     {
                         Message = argException.Message,
                         Errors = null,
                         StatusCode = response.StatusCode,
                         Succsess = false,
-                        Value = false
+                        Value = null,
                     };
                 }
                 else
@@ -444,13 +611,13 @@ public class ItemProxyService
             {
                 logger.LogCritical(ex, "Exception in CreateItem.");
 
-                return new Util_GenericResponse<bool>
+                return new Util_GenericResponse<DTO_Item>
                 {
                     Errors = null,
                     Message = ClientUtil_ExceptionResponse.GeneralMessage,
                     StatusCode = response.StatusCode,
                     Succsess = false,
-                    Value = false,
+                    Value = null,
                 };
             }
         }
@@ -827,6 +994,106 @@ public class ItemProxyService
                 Value = false,
             };
         }
-    } 
+    }
+
+    public async Task<Util_GenericResponse<bool>>
+    RemoveUserFromItem
+    (
+        Guid ownerId,
+        string userIp,
+        string jwtToken,
+        string forgeryToken,
+        string aspNetForgeryToken,
+        DTO_RemoveUserFromItem dTO_RemoveUserFromItem
+    )
+    {
+        HttpResponseMessage response = new();
+
+        try
+        {
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(ownerId), ownerId.ToString()),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(forgeryToken), forgeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
+
+            HttpClient? httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                forgeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
+
+            string? requestUrl = $"{BaseRoute.RouteItemForClient}{Route_ShopRoutes.RemoveUserFromItem
+                                                                 .Replace("{userId}", ownerId.ToString())}";
+
+            string? json = JsonSerializer.Serialize(dTO_RemoveUserFromItem);
+
+            StringContent? content = new(json, Encoding.UTF8, "application/json");
+
+            HttpRequestMessage? requestMessage = new(HttpMethod.Delete, requestUrl)
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, forgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp)
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            string? responseContent = await response.Content.ReadAsStringAsync();
+
+            Util_GenericResponse<bool>? readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>
+            (
+                responseContent,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            ) ?? throw new ArgumentNullException(ClientUtil_ExceptionResponse.ArgumentNullException);
+
+            return readResult;
+        }
+        catch (ArgumentNullException argException)
+        {
+            if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
+            {
+                return new Util_GenericResponse<bool>()
+                {
+                    Message = argException.Message,
+                    Errors = null,
+                    StatusCode = response.StatusCode,
+                    Succsess = false,
+                    Value = false,
+                };
+            }
+            else
+                throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Exception in RemoveUserFromShop.");
+
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = ClientUtil_ExceptionResponse.GeneralMessage,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false,
+            };
+        }
+    }
     #endregion
 }

@@ -1,9 +1,9 @@
 ﻿using MudBlazor;
+using Microsoft.JSInterop;
+using Blazored.LocalStorage;
 using SafeCommerce.ClientDTO.Shop;
 using Microsoft.AspNetCore.Components;
 using SafeCommerce.ClientServices.Interfaces;
-using Blazored.LocalStorage;
-using Microsoft.JSInterop;
 
 namespace SafeCommerce.Client.Shared.Forms.Shop;
 

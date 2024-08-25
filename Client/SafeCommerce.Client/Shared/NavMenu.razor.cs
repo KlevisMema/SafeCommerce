@@ -1,10 +1,11 @@
 ﻿using MudBlazor;
+using Blazored.LocalStorage;
+using SafeCommerce.ClientDTO.Enums;
 using SafeCommerce.Client.Internal;
 using Microsoft.AspNetCore.Components;
 using SafeCommerce.Client.Internal.Helpers;
+using SafeCommerce.ClientServices.Interfaces;
 using SafeCommerce.Client.Shared.Forms.Account;
-using Blazored.LocalStorage;
-using SafeCommerce.ClientDTO.Enums;
 
 namespace SafeCommerce.Client.Shared;
 
@@ -14,7 +15,9 @@ public partial class NavMenu
     [Inject] private AppState _appState { get; set; } = null!;
     [Parameter] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] IDialogService DialogService { get; set; } = null!;
+    [Inject] NavigationManager NavigationManager { get; set; } = null!;
     [Inject] NavigationManager _navigationManager { get; set; } = null!;
+    [Inject] IAuthenticationService AuthenticationService { get; set; } = null!;
     [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
 
     private Role UserRole { get; set; }

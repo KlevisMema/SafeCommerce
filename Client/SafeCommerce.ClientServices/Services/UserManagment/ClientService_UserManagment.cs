@@ -30,7 +30,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             return readResult!;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new ClientUtil_ApiResponse<ClientDto_UserInfo>
             {

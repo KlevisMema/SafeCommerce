@@ -17,6 +17,9 @@ using SafeCommerce.MediatR.Actions.Queries.Item;
 using SafeCommerce.MediatR.Actions.Commands.Item;
 using SafeCommerce.DataTransormObject.Moderation;
 using Microsoft.AspNetCore.Authorization;
+using SafeCommerce.DataTransormObject.Shop;
+using SafeCommerce.MediatR.Actions.Commands.Shop;
+using SafeCommerce.MediatR.Actions.Queries.Shop;
 
 namespace SafeCommerce.API.Controllers;
 
@@ -67,11 +70,11 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.CreateItem)]
     [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_Item>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_Item>))]
+    public async Task<ActionResult<Util_GenericResponse<DTO_Item>>>
     CreateItem
     (
         [FromRoute] Guid userId,
@@ -105,7 +108,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     (
         [FromRoute] Guid itemId,
         [FromRoute] Guid userId,
-        [FromForm] DTO_UpdateItem editItemDto,
+        [FromBody] DTO_UpdateItem editItemDto,
         CancellationToken cancellationToken
     )
     {
@@ -161,6 +164,27 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     )
     {
         return await _mediator.Send(new MediatR_GetItemsByShopIdQuery(shopId, userId.ToString()), cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves all items that are shared for everyone.
+    /// </summary>
+    /// <param name="userId">The identifier of the user requesting the items.</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <returns>A list of items shared with everyone.</returns>
+    [Authorize(Roles = "User")]
+    [HttpGet(Route_ItemRoutes.GetPublicSharedItems)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_PublicItem>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_PublicItem>>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>>
+    GetPublicSharedItems
+    (
+        [FromRoute] Guid userId,
+        CancellationToken cancellationToken
+    )
+    {
+        return await _mediator.Send(new MediatR_GetPublicSharedItemsQuery(userId.ToString()), cancellationToken);
     }
 
     /// <summary>
@@ -261,5 +285,57 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     )
     {
         return await _mediator.Send(new MediatR_GetUserItemsQuery(userId.ToString()), cancellationToken);
+    }
+
+    /// <summary>
+    /// Removes a user form the private shared item
+    /// </summary>
+    /// <param name="userId">The identifier of the owner of the shop.</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <param name="dTO_RemoveUserFromItem">Data object.</param>
+    /// <returns>A object value indicating whether the result was succsessful.</returns>
+    [Authorize(Roles = "User")]
+    [HttpDelete(Route_ShopRoutes.RemoveUserFromItem)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    RemoveUserFromItem
+    (
+        [FromRoute] Guid userId,
+        [FromBody] DTO_RemoveUserFromItem dTO_RemoveUserFromItem,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await _mediator.Send(new MediatR_RemoveUserFromItemCommand(userId, dTO_RemoveUserFromItem), cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves all members of the items.
+    /// </summary>
+    /// <param name="userId">The identifier of the user requesting item details.</param>
+    /// <param name="itemId">The id of the item</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <returns>Information about the members of the specified shop.</returns>
+    [Authorize(Roles = "User")]
+    [HttpGet(Route_ShopRoutes.GetMembersOfTheItem)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemMembers>>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemMembers>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemMembers>>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>>
+    GetMembersOfTheItem
+    (
+        [FromRoute] Guid userId,
+        [FromRoute] Guid itemId,
+        CancellationToken cancellationToken
+    )
+    {
+        return await _mediator.Send(new MediatR_GetMembersOfTheItemQuery(itemId, userId), cancellationToken);
     }
 }

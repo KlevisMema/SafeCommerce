@@ -28,5 +28,7 @@ public class Mapper_Item : Profile
 
         CreateMap<DTO_UpdateItem, SafeCommerce.DataAccessLayer.Models.Item>()
             .ForMember(dest => dest.OwnerId, opt => opt.Ignore());
+
+        CreateMap<SafeCommerce.DataAccessLayer.Models.Item, DTO_PublicItem>();
     }
 }

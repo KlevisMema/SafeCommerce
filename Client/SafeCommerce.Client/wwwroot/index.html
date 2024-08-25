@@ -243,11 +243,8 @@
             }
 
             const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(invitationShop.encryptedKey, obj.keyPair.privateKey, obj.keyPair.publicKey, invitationShop.encryptedKeyNonce);
-
             const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
-
             const nonce = nacl.util.decodeBase64(invitationShop.dataNonce);
-
             const name = await decryptDataWithSymmetricKey(invitationShop.shopName, symmetricKey, nonce);
 
             return {
@@ -262,6 +259,32 @@
                 InvitationId: invitationShop.invitationId,
                 InvitedUserId: invitationShop.invitedUserId,
                 ShopId: invitationShop.shopId,
+            };
+        }
+
+        async function decryptSentItemInvitation(item, userId) {
+            const obj = await getUserKeyPairFromDatabase(userId);
+
+            if (!obj) 
+                throw new Error('Key pair not found.');
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(item.encryptedKey, obj.keyPair.privateKey, obj.keyPair.publicKey, item.encryptedKeyNonce);
+            const symmetricKey = await importSymmetricKey(symmetricKeyBase64);
+            const nonce = nacl.util.decodeBase64(item.dataNonce);
+            const name = await decryptDataWithSymmetricKey(item.itemName, symmetricKey, nonce);
+
+            return {
+                ItemId: item.itemId,
+                IsPublic: item.isPublic,
+                DataNonce: item.dataNonce,
+                InvitationId: item.invitationId,
+                InvitedUserId: item.invitedUserId,
+                EncryptedKey: item.encryptedKey,
+                EncryptedKeyNonce: item.encryptedKeyNonce,
+                User: item.user,
+                InvitationTimeSend: item.invitationTimeSend,
+                ItemName: name,
+                InvitationStatus: item.invitationStatus,
             };
         }
 
@@ -383,6 +406,21 @@
             }
         }
 
+        async function saveItemKeysData(itemData) {
+            await saveItemKeysInDatabase(
+                itemData.itemId,
+                itemData.ownerId,
+                itemData.encryptedKey,
+                itemData.signatureOfKey,
+                {
+                    SigningPublicKey: itemData.signingPublicKey,
+                    SigningPrivateKey: itemData.signingPrivateKey
+                },
+                itemData.dataNonce,
+                itemData.encryptedKeyNonce
+            );
+        }
+
         async function shareItemToUser(recipientPublicKeyBase64, symmetricKeyBase64, userId) {
             const user = await getUserKeyPairFromDatabase(userId);
 
@@ -472,6 +510,41 @@
                 EncryptedKeyNonce: encryptedItem.encryptedKeyNonce,
                 DataNonce: encryptedItem.dataNonce,
             };
+        }
+
+        async function updateItem(ItemToBeUpdated, symmetricKey, nonce, itemId, userId) {
+            var item = await getItemKeyPairFromDatabase(itemId);
+            const userKeys = await getUserKeyPairFromDatabase(userId);
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(item.encryptedSymmetricKey, userKeys.keyPair.privateKey, userKeys.keyPair.publicKey, ItemToBeUpdated.encryptedKeyNonce);
+
+            const encryptedName = await encryptDataWithSymmetricKey(ItemToBeUpdated.name, symmetricKeyBase64, nacl.util.decodeBase64(item.dataNonce));
+            const encryptedDescription = await encryptDataWithSymmetricKey(ItemToBeUpdated.description, symmetricKeyBase64, nacl.util.decodeBase64(item.dataNonce));
+            const encryptedPrice = await encryptDataWithSymmetricKey(ItemToBeUpdated.price, symmetricKeyBase64, nacl.util.decodeBase64(item.dataNonce));
+            const encryptedPicture = await encryptDataWithSymmetricKey(ItemToBeUpdated.picture, symmetricKeyBase64, nacl.util.decodeBase64(item.dataNonce));
+
+            return {
+                Name: encryptedName.encryptedData,
+                Description: encryptedDescription.encryptedData,
+                Price: ItemToBeUpdated.price,
+                EncryptedPrice: encryptedPrice.encryptedData,
+                Picture: encryptedPicture.encryptedData,
+
+                ShopId: ItemToBeUpdated.shopId,
+
+                DataNonce: item.dataNonce,
+                EncryptedKey: item.encryptedSymmetricKey,
+                SignatureOfKey: item.signature,
+                SigningPublicKey: item.relatedKeys.SigningPublicKey,
+                SigningPrivateKey: item.relatedKeys.SigningPrivateKey,
+                EncryptedKeyNonce: item.keyNonce,
+
+                NonEncryptedKey: symmetricKeyBase64
+            }
+        }
+
+        async function deleteItemConfirm(itemId) {
+            await deleteItemKeyPairFromDatabase(itemId);
         }
     </script>
 

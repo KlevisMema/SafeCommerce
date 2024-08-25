@@ -30,9 +30,9 @@ public partial class Items
 
             foreach (var item in getListItems.Value)
             {
-                var isOwnerValid = await this.JsRuntime.InvokeAsync<bool>("verifyPublicKey", item.OwnerPublicKey, item.OwnerSigningPublicKey, item.OwnerSignature);
+                bool isValidCrypoKey = await this.JsRuntime.InvokeAsync<bool>("verifyPublicKey", item.OwnerPublicKey, item.OwnerSigningPublicKey, item.OwnerSignature);
 
-                if (isOwnerValid)
+                if (isValidCrypoKey)
                 {
                     if (!item.MakePublic)
                     {
@@ -52,8 +52,7 @@ public partial class Items
                         this.ListItems.Add(decryptedItem);
                         continue;
                     }
-
-                    this.ListItems = getListItems.Value.ToList();
+                    this.ListItems.Add(item);
                 }
             }
         }

@@ -13,7 +13,7 @@ public static class BaseRoute
     public const string RouteShopForClient = "api/Shop/";
     public const string RouteItemForClient = "api/Item/";
     public const string RouteModeration = "api/Moderation/";
-    public const string RouteShopInvitationForClient = "api/Invitation/";
+    public const string RouteInvitationForClient = "api/Invitation/";
     public const string RouteAuthenticationForClient = "api/Authentication/";
     public const string RouteAccountManagmentForClient = "api/AccountManagment/";
 
@@ -23,5 +23,6 @@ public static class BaseRoute
     public const string ProxyRouteModeration = "api/ModerationProxy/";
     public const string RouteAccountManagmentProxy = "api/AccountManagmentProxy/";
     public const string RouteProxyShopInvitationForClient = "api/ShopInvitatonProxy/";
+    public const string RouteProxyItemInvitationForClient = "api/ItemInvitatonProxy/";
     public const string ProxyRouteAccountManagmentForClient = "api/AccountManagmentProxy/";
 }

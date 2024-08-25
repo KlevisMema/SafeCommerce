@@ -104,7 +104,7 @@ public partial class UserRoleShops
                 { "OnShopUpdated", EventCallback.Factory.Create(this, (ClientDto_Shop updatedShop) => OnShopUpdated(updatedShop, ref clientDto_Shop)) }
             };
 
-        var dialog = await DialogService.ShowAsync<EditShopForm>("Edit Group", parameters, DialogHelper.SimpleDialogOptions());
+        var dialog = await DialogService.ShowAsync<EditShopForm>("Edit Shop", parameters, DialogHelper.SimpleDialogOptions());
         var result = await dialog.Result;
     }
 
@@ -134,7 +134,7 @@ public partial class UserRoleShops
             { "OnShopDeleted", EventCallback.Factory.Create(this, () => OnDeletedShop(clientDto_Shop, isPrivateShop)) }
         };
 
-        var dialog = await DialogService.ShowAsync<DeleteShop>("Are you sure you want to delete this group?", parameters, DialogHelper.SimpleDialogOptions());
+        var dialog = await DialogService.ShowAsync<DeleteShop>("Are you sure you want to delete this shop?", parameters, DialogHelper.SimpleDialogOptions());
         await dialog.Result;
     }
 

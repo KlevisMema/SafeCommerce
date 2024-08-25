@@ -59,7 +59,7 @@ async function saveUserKeysInDatabase(userId, keyPair, myDevice, password, keyPa
     });
 }
 
-async function saveItemKeysInDatabase(itemId, ownerId, encryptedSymmetricKey, signature, relatedKeys) {
+async function saveItemKeysInDatabase(itemId, ownerId, encryptedSymmetricKey, signature, relatedKeys, nonce, keyNonce) {
     const db = await openDatabase();
     const transaction = db.transaction("ItemKeys", "readwrite");
     const store = transaction.objectStore("ItemKeys");
@@ -69,7 +69,9 @@ async function saveItemKeysInDatabase(itemId, ownerId, encryptedSymmetricKey, si
         ownerId: ownerId,
         encryptedSymmetricKey: encryptedSymmetricKey,
         signature: signature,
-        relatedKeys: relatedKeys
+        relatedKeys: relatedKeys,
+        dataNonce: nonce,
+        keyNonce: keyNonce
     });
 
     return new Promise((resolve, reject) => {
@@ -205,7 +207,7 @@ async function getItemKeyPairFromDatabase(itemId) {
         return new Promise((resolve, reject) => {
             request.onsuccess = (event) => {
                 const result = event.target.result;
-                if (result && result.keyPair && result.signature && result.keyPairSignature) {
+                if (result) {
                     resolve(result);
                 } else {
                     resolve(null);

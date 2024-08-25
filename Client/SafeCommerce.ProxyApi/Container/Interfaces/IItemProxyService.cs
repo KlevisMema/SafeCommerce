@@ -42,10 +42,27 @@ public interface IItemProxyService
         string userIp,
         string jwtToken
     );
+
+    Task<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>
+    GetPublicSharedItems
+    (
+        Guid userId,
+        string userIp,
+        string jwtToken
+    );
+
+    Task<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>
+    GetMembersOfTheItem
+    (
+        Guid itemId,
+        Guid ownerId,
+        string userIp,
+        string jwtToken
+    );
     #endregion
 
     #region Post
-    Task<Util_GenericResponse<bool>>
+    Task<Util_GenericResponse<DTO_Item>>
     CreateItem
     (
         Guid ownerId,
@@ -99,6 +116,17 @@ public interface IItemProxyService
         string jwtToken,
         string forgeryToken,
         string aspNetForgeryToken
-    ); 
+    );
+
+    Task<Util_GenericResponse<bool>>
+    RemoveUserFromItem
+    (
+        Guid ownerId,
+        string userIp,
+        string jwtToken,
+        string forgeryToken,
+        string aspNetForgeryToken,
+        DTO_RemoveUserFromItem dTO_RemoveUserFromItem
+    );
     #endregion
 }

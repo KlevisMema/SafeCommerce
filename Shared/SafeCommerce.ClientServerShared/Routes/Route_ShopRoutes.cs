@@ -19,7 +19,9 @@ public static class Route_ShopRoutes
     public const string GetShopsForModeration = "ShopsForModeration/{userId}";
     public const string ModerateShop = "ModerateShop/{userId}";
     public const string RemoveUserFromShop = "RemoveUserFromShop/{userId}";
+    public const string RemoveUserFromItem = "RemoveUserFromItem/{userId}";
     public const string GetMembersOfTheShop = "GetMembersOfTheShop/{shopId}/{userId}";
+    public const string GetMembersOfTheItem = "GetMembersOfTheItem/{itemId}/{userId}";
 
     public const string ProxyGetPublicShops = "PublicShops";
     public const string ProxyGetShop = "ShopDetails/{shopId}";
@@ -31,5 +33,7 @@ public static class Route_ShopRoutes
     public const string ProxyGetShopsForModeration = "ShopsForModeration";
     public const string ProxyModerateShop = "ModerateShop";
     public const string ProxyRemoveUserFromShop = "RemoveUserFromShop";
+    public const string ProxyRemoveUserFromItem = "RemoveUserFromItem";
     public const string ProxyGetMembersOfTheShop = "GetMembersOfTheShop/{shopId}";
+    public const string ProxyGetMembersOfTheItem = "GetMembersOfTheItem/{itemId}";
 }

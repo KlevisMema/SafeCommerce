@@ -1,6 +1,7 @@
 ﻿using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.BaseModels;
 using System.ComponentModel.DataAnnotations;
+using SafeShare.DataAccessLayer.Models;
 
 namespace SafeCommerce.DataAccessLayer.Models;
 public class Item : Base
@@ -33,5 +34,5 @@ public class Item : Base
     public virtual ModerationHistory? ModerationHistory { get; set; }
 
     public virtual ICollection<ItemShare>? ItemShares { get; set; }
-    public virtual ICollection<Metadata>? Metadata { get; set; }
+    public virtual ICollection<ItemInvitation>? ItemInvitations { get; set; }
 }

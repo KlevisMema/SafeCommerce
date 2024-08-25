@@ -230,7 +230,6 @@ public class ClientService_Shop
         }
     }
 
-
     public async Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ShopForModeration>>>
     GetShopsSubjectForModeration()
     {
