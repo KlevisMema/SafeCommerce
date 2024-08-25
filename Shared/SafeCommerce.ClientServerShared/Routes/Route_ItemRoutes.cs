@@ -18,6 +18,7 @@ public static class Route_ItemRoutes
     public const string ModerateItem = "ModerateItem/{userId}";
     public const string GetItemsForModeration = "ItemsForModeration/{userId}";
     public const string GetUserItems = "UserItems/{userId}";
+    public const string GetPublicSharedItems = "PublicSharedItems/{userId}";
 
     public const string ProxyGetItemDetails = "ItemDetails/{itemId}";
     public const string ProxyCreateItem = "CreateItem";
@@ -27,5 +28,6 @@ public static class Route_ItemRoutes
     public const string ProxyShareItem = "ShareItem";
     public const string ProxyModerateItem = "ModerateItem";
     public const string ProxyGetUserItems = "UserItems";
-    public const string PeoxyGetItemsForModeration = "ItemsForModeration";
+    public const string ProxyGetItemsForModeration = "ItemsForModeration";
+    public const string ProxyGetPublicSharedItems = "PublicSharedItems";
 }

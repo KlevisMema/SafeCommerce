@@ -9,8 +9,9 @@
 * This file contains definitions for the ApplicationUser's properties and their relationships.
 */
 
-using SafeCommerce.DataAccess.BaseModels;
 using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccess.BaseModels;
+using SafeCommerce.DataAccessLayer.Models;
 
 namespace SafeCommerce.DataAccess.Models;
 
@@ -26,4 +27,7 @@ public class ApplicationUser : BaseIdentity
 
     public virtual ICollection<ShopInvitation>? SentInvitations { get; set; }
     public virtual ICollection<ShopInvitation>? ReceivedInvitations { get; set; }
+
+    public virtual ICollection<ItemInvitation>? SentItemInvitations { get; set; }
+    public virtual ICollection<ItemInvitation>? ReceivedItemInvitations { get; set; }
 }

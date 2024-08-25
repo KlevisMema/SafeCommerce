@@ -3,7 +3,7 @@ using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.BaseModels;
 using System.ComponentModel.DataAnnotations;
 
-namespace SafeShare.DataAccessLayer.Models;
+namespace SafeCommerce.DataAccessLayer.Models;
 
 public class ShopInvitation : Base
 {

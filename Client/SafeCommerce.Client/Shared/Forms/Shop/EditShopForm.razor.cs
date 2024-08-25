@@ -9,12 +9,12 @@ namespace SafeCommerce.Client.Shared.Forms.Shop;
 
 public partial class EditShopForm
 {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] private IClientService_Shop ShopService { get; set; } = null!;
 
-    [Parameter] public ClientDto_Shop ShopToBeEdited { get; set; }
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [Parameter] public ClientDto_Shop? ShopToBeEdited { get; set; }
     [Parameter] public EventCallback<ClientDto_Shop> OnShopUpdated { get; set; }
 
     private ClientDto_UpdateShop? UpdateShop { get; set; }
@@ -22,7 +22,7 @@ public partial class EditShopForm
     private bool _processing = false;
     private EditForm? ChangeShopForm;
 
-    protected override Task 
+    protected override Task
     OnInitializedAsync()
     {
         UpdateShop = new()
@@ -77,7 +77,7 @@ public partial class EditShopForm
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task 
+    private async Task
     UpdateEncryptedShop()
     {
         var encryptedShop = await JsRuntime.InvokeAsync<CientDto_CreateShopWithAllKeys>("updateShop",
@@ -101,29 +101,35 @@ public partial class EditShopForm
         await NormalUpdate(transformedShopData);
     }
 
-    private async Task 
+    private async Task
     NormalUpdate
     (
         ClientDto_UpdateShop UpdateShop
     )
     {
-        var updateDataResult = await ShopService.EditShop(ShopToBeEdited.ShopId, UpdateShop!);
-
-        if (!updateDataResult.Succsess)
+        if (ShopToBeEdited is not null)
         {
-            _snackbar.Add(updateDataResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; });
+            var updateDataResult = await ShopService.EditShop(ShopToBeEdited.ShopId, UpdateShop!);
 
-            if (updateDataResult.Errors is not null)
-                ShowValidationsMessages(updateDataResult.Errors);
+            if (!updateDataResult.Succsess)
+            {
+                _snackbar.Add(updateDataResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; });
+
+                if (updateDataResult.Errors is not null)
+                    ShowValidationsMessages(updateDataResult.Errors);
+            }
+            else
+            {
+                _snackbar.Add(updateDataResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
+                updateDataResult.Value!.Name = this.UpdateShop!.Name;
+                updateDataResult.Value.Description = this.UpdateShop.Description;
+                await OnShopUpdated.InvokeAsync(updateDataResult.Value);
+
+            }
         }
         else
         {
-            _snackbar.Add(updateDataResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
-            updateDataResult.Value!.Name = this.UpdateShop.Name;
-            updateDataResult.Value.Description = this.UpdateShop.Description;
-            await OnShopUpdated.InvokeAsync(updateDataResult.Value);
-
+            _snackbar.Add("Shop to be updated is null.", Severity.Success, config => { config.CloseAfterNavigation = true; });
         }
-
     }
 }

@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
+using SafeCommerce.ClientDTO.User;
 using SafeCommerce.ClientUtilities.Helpers;
 using SafeCommerce.ClientDTO.Authentication;
 using SafeCommerce.ClientServerShared.Routes;
 using SafeCommerce.ClientUtilities.Responses;
 using SafeCommerce.ClientServices.Interfaces;
-using SafeCommerce.ClientDTO.User;
 
 namespace SafeCommerce.ClientServices.Authentication;
 
@@ -96,7 +96,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
             return readResult;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new ClientUtil_ApiResponse<ClientDto_LoginResult>()
             {

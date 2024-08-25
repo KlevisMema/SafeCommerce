@@ -33,6 +33,10 @@ public partial class InviteUserToShop
     {
         if (SelectedUser is not null)
         {
+            if (String.IsNullOrEmpty(SelectedUser.PublicKey) || String.IsNullOrEmpty(SelectedUser.Signature) || String.IsNullOrEmpty(SelectedUser.SigningPublicKey))
+            {
+                ShowValidationsMessages(["User can be invited!"]);
+            }
             if (InvitationReason == InvitationReason.ShopInvitation)
                 await SubmitInviteUserToGroupForm();
             else

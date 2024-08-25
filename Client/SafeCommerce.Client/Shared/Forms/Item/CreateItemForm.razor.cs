@@ -158,7 +158,8 @@ public partial class CreateItemForm
 
         var selectedShop = ListShops.FirstOrDefault(x => x.ShopId == CreateItem.ShopId);
 
-        if (selectedShop == null) {
+        if (selectedShop == null)
+        {
             Snackbar.Add("Please select a shop again", Severity.Warning, config =>
             {
                 config.CloseAfterNavigation = true;
@@ -187,7 +188,7 @@ public partial class CreateItemForm
         List<ClientDto_ShopMembers> verifiedMembers = await GetVerifiedMembers();
 
         ClientDto_CreateItemWithAllKeys? myEncryptedItem = await JsRuntime.InvokeAsync<ClientDto_CreateItemWithAllKeys>("encryptItemData", CreateItem, userId);
-        
+
         if (myEncryptedItem == null)
         {
 
@@ -226,12 +227,12 @@ public partial class CreateItemForm
             CreateItem.ShareItemToPrivateShop.Add(shareItemWithUser);
         }
 
-        CreateItem.DTO_ShareItem = null;
+        CreateItem.ShareItemToUser = null;
 
-        await SubmitForm();
+        await SubmitForm(myEncryptedItem);
     }
 
-    private async Task<List<ClientDto_ShopMembers>> 
+    private async Task<List<ClientDto_ShopMembers>>
     GetVerifiedMembers()
     {
         var shopMembers = await ShopService.GetMembersOfTheShop(CreateItem.ShopId);
@@ -256,18 +257,18 @@ public partial class CreateItemForm
     PublicShop()
     {
         CreateItem.ShareItemToPrivateShop = null;
-        CreateItem.DTO_ShareItem = null;
+        CreateItem.ShareItemToUser = null;
         CreateItem.EncryptedPrice = null;
 
-        await SubmitForm();
+        await SubmitForm(null);
     }
 
     private async Task
     ShareItemToEveryone()
     {
-        CreateItem.DTO_ShareItem = null;
+        CreateItem.ShareItemToUser = null;
         CreateItem.ShareItemToPrivateShop = null;
-        await SubmitForm();
+        await SubmitForm(null);
     }
 
     private async Task
@@ -325,12 +326,13 @@ public partial class CreateItemForm
             return;
         }
 
-        ClientDto_ShareItem? shareItemWithUser = await JsRuntime.InvokeAsync<ClientDto_ShareItem>("shareItemToUser", SelectedUser.PublicKey, myEncryptedItem.NonEncryptedKey, userId);
-        shareItemWithUser.UserId = SelectedUser.UserId;
+        ClientDto_SendItemInvitationRequest? shareItemWithUser = await JsRuntime.InvokeAsync<ClientDto_SendItemInvitationRequest>("shareItemToUser", SelectedUser.PublicKey, myEncryptedItem.NonEncryptedKey, userId);
+        shareItemWithUser.InvitedUserId = Guid.Parse(SelectedUser.UserId);
+        shareItemWithUser.InvitingUserId = Guid.Parse(userId);
 
         CreateItem.ShopId = myEncryptedItem.ShopId;
 
-        CreateItem.Price = null;
+        CreateItem.Price = 0;
         CreateItem.Picture = myEncryptedItem.Picture;
         CreateItem.Name = myEncryptedItem.Name;
         CreateItem.Description = myEncryptedItem.Description;
@@ -344,15 +346,18 @@ public partial class CreateItemForm
 
         CreateItem.ItemShareOption = myEncryptedItem.ItemShareOption;
 
-        CreateItem.DTO_ShareItem = shareItemWithUser;
+        CreateItem.ShareItemToUser = shareItemWithUser;
 
         CreateItem.ShareItemToPrivateShop = null;
 
-        await SubmitForm();
+        await SubmitForm(myEncryptedItem);
     }
 
     private async Task
-    SubmitForm()
+    SubmitForm
+    (
+        ClientDto_CreateItemWithAllKeys? encryptedItem
+    )
     {
         var result = await ItemService.CreateItem(CreateItem);
 
@@ -372,6 +377,21 @@ public partial class CreateItemForm
                 config.VisibleStateDuration = 3000;
             });
 
+            if (encryptedItem is not null)
+            {
+                await JsRuntime.InvokeVoidAsync("saveItemKeysData", new ClientDto_SaveItemInStore
+                {
+                    ItemId = result.Value.ItemId,
+                    OwnerId = result.Value.OwnerId,
+                    DataNonce = encryptedItem.DataNonce,
+                    EncryptedKey = encryptedItem.EncryptedKey,
+                    EncryptedKeyNonce = encryptedItem.EncryptedKeyNonce,
+                    SignatureOfKey = encryptedItem.SignatureOfKey,
+                    SigningPrivateKey = encryptedItem.SigningPrivateKey,
+                    SigningPublicKey = encryptedItem.SigningPublicKey,
+                });
+            }
+
             CreateItem = new();
             ImageFile = null;
             imagePreview = string.Empty;
@@ -380,18 +400,6 @@ public partial class CreateItemForm
         }
 
         await InvokeAsync(StateHasChanged);
-    }
-
-    private static async Task<byte[]>
-    ConvertToByteArrayAsync
-    (
-        IBrowserFile file
-    )
-    {
-        using var memoryStream = new MemoryStream();
-        await file.OpenReadStream().CopyToAsync(memoryStream);
-
-        return memoryStream.ToArray();
     }
 
     private async Task

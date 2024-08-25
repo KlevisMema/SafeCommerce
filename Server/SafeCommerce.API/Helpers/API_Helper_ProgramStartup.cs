@@ -24,6 +24,8 @@ using System.Security.Authentication;
 using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Authentication.Auth;
+using SafeCommerce.Mappings.Invitation;
+using SafeCommerce.Mappings.Moderation;
 using SafeCommerce.BLL.RepositoryService;
 using SafeCommerce.Mappings.UserManagment;
 using Microsoft.AspNetCore.DataProtection;
@@ -45,8 +47,6 @@ using SafeCommerce.Security.JwtSecurity.Implementations;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using SafeCommerce.MediatR.Handlers.CommandsHandlers.Authentication;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using SafeCommerce.Mappings.Invitation;
-using SafeCommerce.Mappings.Moderation;
 
 namespace SafeCommerce.API.Startup;
 
@@ -176,6 +176,7 @@ internal static class API_Helper_ProgramStartup
         Services.AddScoped<IItemService, ItemService>();
         Services.AddScoped<IAUTH_Register, AUTH_Register>();
         Services.AddScoped<IShopInvitations, ShopInvitations>();
+        Services.AddScoped<IItemInvitations, ItemInvitations>();
         Services.AddScoped<IAccountManagment, AccountManagment>();
         Services.AddScoped<IModerationService, ModerationService>();
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();

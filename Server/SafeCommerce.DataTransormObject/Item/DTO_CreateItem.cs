@@ -1,14 +1,17 @@
-﻿using SafeCommerce.Utilities.Enums;
+﻿using SafeCommerce.DataTransormObject.Validators;
+using SafeCommerce.Utilities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace SafeCommerce.DataTransormObject.Item;
 
 public class DTO_CreateItem
 {
+    [NoXss]
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    [NoXss]
     [Required]
     [StringLength(400)]
     public string Description { get; set; } = string.Empty;
@@ -29,6 +32,6 @@ public class DTO_CreateItem
 
     public ItemShareOption? ItemShareOption { get; set; }
 
-    public DTO_ShareItem? DTO_ShareItem { get; set; }
+    public DTO_SendItemInvitationRequest? ShareItemToUser { get; set; }
     public List<DTO_ShareItem>? ShareItemToPrivateShop { get; set; }
 }

@@ -1,4 +1,6 @@
-﻿namespace SafeCommerce.DataTransormObject.Item;
+﻿using SafeCommerce.DataTransormObject.Shop;
+
+namespace SafeCommerce.DataTransormObject.Item;
 
 public class DTO_Item
 {

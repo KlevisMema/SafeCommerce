@@ -102,11 +102,17 @@
             <MudNavGroup Title="Item" Icon="@Icons.Material.Filled.ShoppingBag" IconColor="Color.Inherit" Expanded="false">
                 <MudNavLink Match="NavLinkMatch.All" Href="/Items" Icon="@Icons.Material.Filled.List" IconColor="Color.Inherit">See Items</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All" Href="/Create-Item" Icon="@Icons.Material.Filled.Add" IconColor="Color.Inherit">Create Item</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Items-Management" Icon="@Icons.Material.Filled.ManageHistory" IconColor="Color.Inherit">Items Management</MudNavLink>
             </MudNavGroup>
 
-            <MudNavGroup Title="Invitations" Icon="@Icons.Material.Filled.InsertInvitation" IconColor="Color.Inherit" Expanded="false">
+            <MudNavGroup Title="Group Invitations" Icon="@Icons.Material.Filled.InsertInvitation" IconColor="Color.Inherit" Expanded="false">
                 <MudNavLink Match="NavLinkMatch.All" Href="/Sent-Invitations" Icon="@Icons.Material.Filled.Send" IconColor="Color.Inherit">Sent Invitations</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All" Href="/Recived-Invitations" Icon="@Icons.Material.Filled.CallReceived" IconColor="Color.Inherit">Recived Invitations</MudNavLink>
+            </MudNavGroup>
+
+            <MudNavGroup Title="Item Invitations" Icon="@Icons.Material.Filled.InsertInvitation" IconColor="Color.Inherit" Expanded="false">
+                <MudNavLink Match="NavLinkMatch.All" Href="/Sent-Item-Invitations" Icon="@Icons.Material.Filled.Send" IconColor="Color.Inherit">Sent Invitations</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Recived-Item-Invitations" Icon="@Icons.Material.Filled.CallReceived" IconColor="Color.Inherit">Recived Invitations</MudNavLink>
             </MudNavGroup>
         }
         else

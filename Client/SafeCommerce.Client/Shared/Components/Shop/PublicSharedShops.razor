@@ -35,8 +35,27 @@
                 }
             </MudGrid>
         </MudExpansionPanel>
-        <MudExpansionPanel Text="Shared Items" Expanded="true">
-
+        <MudExpansionPanel Text="Public Items" Expanded="true">
+            <MudGrid Spacing="3">
+                @foreach (var item in PublicItems)
+                {
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Class="mud-elevation-6">
+                            <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" Height="200" />
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">@item.Name</MudText>
+                                <MudText Typo="Typo.subtitle2">$@item.Price.Value!.ToString("0.00")</MudText>
+                                <MudText Typo="Typo.body2">
+                                    @item.Description
+                                </MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Filled">Buy Now</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
         </MudExpansionPanel>
     </MudExpansionPanels>
 </MudContainer>

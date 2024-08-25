@@ -5,7 +5,7 @@ using SafeCommerce.DataTransormObject.Moderation;
 namespace SafeCommerce.BLL.Interfaces;
 public interface IItemService
 {
-    Task<Util_GenericResponse<bool>> CreateItem
+    Task<Util_GenericResponse<DTO_Item>> CreateItem
     (
         DTO_CreateItem createItemDto, 
         string ownerId, 
@@ -34,36 +34,64 @@ public interface IItemService
         CancellationToken cancellationToken = default
     );
 
-    Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetItemsByShopId
+    Task<Util_GenericResponse<IEnumerable<DTO_Item>>> 
+    GetItemsByShopId
     (
         Guid shopId, 
         string userId, 
         CancellationToken cancellationToken = default
     );
 
-    Task<Util_GenericResponse<bool>> ShareItem
+    Task<Util_GenericResponse<bool>> 
+    ShareItem
     (
         Guid ownerId,
         DTO_ShareItem shareItemDto, 
         CancellationToken cancellationToken = default
     );
 
-    Task<Util_GenericResponse<bool>> ModerateItem
+    Task<Util_GenericResponse<bool>> 
+    ModerateItem
     (
         DTO_ModerateItem moderateItemDto, 
         string moderatorId, 
         CancellationToken cancellationToken = default
     );
 
-    Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetUserItems
+    Task<Util_GenericResponse<IEnumerable<DTO_Item>>> 
+    GetUserItems
     (
         string userId,
         CancellationToken cancellationToken = default
     );
 
-    Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetItemsSubjectForModeration
+    Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>> 
+    GetItemsSubjectForModeration
     (
         Guid moderatorId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>
+    GetPublicSharedItems
+    (
+        string userId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>
+    GetMembersOfTheItem
+    (
+        Guid itemId,
+        Guid ownerId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<Util_GenericResponse<bool>>
+    RemoveUserFromIem
+    (
+        Guid ownerId,
+        DTO_RemoveUserFromItem removeUserFromItem,
         CancellationToken cancellationToken = default
     );
 }

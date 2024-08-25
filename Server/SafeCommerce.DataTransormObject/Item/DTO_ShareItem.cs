@@ -10,4 +10,5 @@ public class DTO_ShareItem
     public string? EncryptedKeyNonce { get; set; }
     public string UserId { get; set; } = string.Empty;
     public ItemShareOption? ItemShareOption { get; set; }
+    public DTO_SendItemInvitationRequest? SendItemInvitation {  get; set; }
 }

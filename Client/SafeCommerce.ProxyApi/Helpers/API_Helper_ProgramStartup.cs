@@ -93,6 +93,7 @@ internal static class API_Helper_ProgramStartup
         Services.AddScoped<IShopProxyService, ShopProxyService>();
         Services.AddScoped<IProxyAuthentication, ProxyAuthentication>();
         Services.AddScoped<IModerationProxyService, ModerationProxyService>();
+        Services.AddScoped<IItemInvitationProxyService, ItemInvitationProxyService>();
         Services.AddScoped<IShopInvitationProxyService, ShopInvitationProxyService>();
         Services.AddScoped<IAccountManagmentProxyService, AccountManagmentProxyService>();
         Services.AddScoped<IRequestConfigurationProxyService, RequestConfigurationProxyService>();

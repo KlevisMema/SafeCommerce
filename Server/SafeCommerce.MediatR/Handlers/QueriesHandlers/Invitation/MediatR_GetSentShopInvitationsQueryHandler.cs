@@ -21,7 +21,7 @@ public class MediatR_GetSentShopInvitationsQueryHandler
         CancellationToken cancellationToken
     )
     {
-        var getSentInvitationsResult = await _service.GetSentGroupInvitations(request.UserId);
+        var getSentInvitationsResult = await _service.GetSentShopInvitations(request.UserId);
 
         return Util_GenericControllerResponse<DTO_SentInvitations>.ControllerResponseList(getSentInvitationsResult);
     }

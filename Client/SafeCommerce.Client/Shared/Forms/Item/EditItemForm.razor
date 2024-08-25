@@ -1,0 +1,77 @@
+﻿<style class="apply-nonce">
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+    }
+
+    .mud-dialog {
+        width: 400px !important;
+    }
+
+        .mud-dialog .mud-dialog-actions {
+            padding: 8px 24px 16px 24px !important;
+        }
+
+        .mud-dialog .mud-dialog-title {
+            padding: 16px 24px 8px 24px !important;
+        }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
+            Edit Item
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm @ref="@UpdateItemForm" Model="UpdateItem" style="margin: 10px">
+            <DataAnnotationsValidator />
+            <MudTextField InputType="InputType.Text" @bind-Value="@UpdateItem.Name" Label="Item name"
+                          Adornment="Adornment.End"
+                          AdornmentColor="Color.Primary"
+                          Variant="Variant.Outlined"
+                          Required=true />
+
+            <MudNumericField @bind-Value="UpdateItem.Price"
+                             Label="Price"
+                             Variant="Variant.Outlined"
+                             Min="0"
+                             HelperText="Update price" />
+
+            <MudTextField InputType="InputType.Text" @bind-Value="@UpdateItem.Description" Label="Item description"
+                          Adornment="Adornment.End"
+                          AdornmentColor="Color.Primary"
+                          Variant="Variant.Outlined"
+                          Required=true />
+
+            <MudFileUpload T="IBrowserFile" Accept=".jpg, .png" MaximumFileCount="1" AppendMultipleFiles="false" FilesChanged="UploadFile">
+                <ActivatorContent>
+                    <MudFab Color="Color.Secondary"
+                            StartIcon="@Icons.Material.Filled.Image"
+                            Label="Load picture" />
+                </ActivatorContent>
+            </MudFileUpload>
+
+            @if (!string.IsNullOrEmpty(imagePreview))
+            {
+                <MudImage Fluid="true" Src="@($"data:image/*;base64," + imagePreview)" Class="rounded-lg" Elevation="5" Width="250" />
+            }
+
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_processing" Style="@($"background:{Colors.Cyan.Darken3};")" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="ValidateForm">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Style="@($"color:{Colors.Cyan.Darken3};")" />
+                <MudText Class="ms-2" Style="@($"color:{Colors.Cyan.Darken3};")">Submiting</MudText>
+            }
+            else
+            {
+                <MudText Style="@($"color:white;")">Submit</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

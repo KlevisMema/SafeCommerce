@@ -3,9 +3,10 @@ using SafeCommerce.ClientDTO.Moderation;
 using SafeCommerce.ClientUtilities.Responses;
 
 namespace SafeCommerce.ClientServices.Interfaces;
+
 public interface IClientService_Item
 {
-    Task<ClientUtil_ApiResponse<bool>> 
+    Task<ClientUtil_ApiResponse<ClientDto_Item>> 
     CreateItem
     (
         ClientDto_CreateItem createItemDto
@@ -51,6 +52,22 @@ public interface IClientService_Item
         ClientDto_ShareItem shareItemDto
     );
 
-    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_Item>>>
+    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemForModeration>>>
     GetItemsSubjectForModeration();
+
+
+    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_PublicItem>>>
+    GetPublicSharedItems();
+
+    Task<ClientUtil_ApiResponse<IEnumerable<ClientDto_ItemMembers>>>
+    GetMembersOfTheItem
+    (
+        Guid itemId
+    );
+
+    Task<ClientUtil_ApiResponse<bool>>
+    RemoveUserFromItem
+    (
+        ClientDto_RemoveUserFromItem clientDto_RemoveUserFromItem
+    );
 }

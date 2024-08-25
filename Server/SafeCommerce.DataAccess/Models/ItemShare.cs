@@ -1,9 +1,10 @@
-﻿using SafeCommerce.DataAccess.Models;
+﻿using SafeCommerce.DataAccess.BaseModels;
+using SafeCommerce.DataAccess.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace SafeShare.DataAccessLayer.Models;
-
-public class ItemShare
+namespace SafeCommerce.DataAccessLayer.Models;
+    
+public class ItemShare : Base
 {
     [Key]
     public Guid ItemShareId { get; set; }

@@ -5,8 +5,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using SafeCommerce.DataAccess.Models;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using SafeShare.DataAccessLayer.Models;
 
 namespace SafeCommerce.DataAccess.Context;
 
@@ -22,10 +23,6 @@ public class ApplicationDbContext
     DbContextOptions<ApplicationDbContext> options
 ) : IdentityDbContext<ApplicationUser>(options)
 {
-    /// <summary>
-    /// Gets or sets the database table for Log Entries.
-    /// </summary>
-    public DbSet<LogEntry> LogEntries { get; set; }
     /// <summary>
     /// Gets or sets the database table for refresh tokens.
     /// </summary>
@@ -47,10 +44,6 @@ public class ApplicationDbContext
     /// </summary>
     public DbSet<ItemShare> ItemShares { get; set; }
     /// <summary>
-    /// Gets or sets the database table for Metadata.
-    /// </summary>
-    public DbSet<Metadata> Metadata { get; set; }
-    /// <summary>
     /// Gets or sets the database table for Moderations.
     /// </summary>
     public DbSet<ModerationHistory> ModerationHistories { get; set; }
@@ -58,6 +51,10 @@ public class ApplicationDbContext
     /// Gets or sets the database table for Shop invitations.
     /// </summary>
     public DbSet<ShopInvitation> ShopInvitations { get; set; }
+    /// <summary>
+    /// Gets or sets the database table for Item invitations.
+    /// </summary>
+    public DbSet<ItemInvitation> ItemInvitations { get; set; }
 
     protected override void OnModelCreating
     (
@@ -119,14 +116,7 @@ public class ApplicationDbContext
             .HasForeignKey(ish => ish.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Item to Metadata relationship
-        modelBuilder.Entity<Metadata>()
-            .HasOne(m => m.Item)
-            .WithMany(i => i.Metadata)
-            .HasForeignKey(m => m.ItemId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // ShopInvitation to User relationship
+        // Shop Invitation to User relationship
 
         modelBuilder.Entity<ShopInvitation>()
            .HasOne(gi => gi.InvitingUser)
@@ -137,6 +127,20 @@ public class ApplicationDbContext
         modelBuilder.Entity<ShopInvitation>()
             .HasOne(gi => gi.InvitedUser)
             .WithMany(u => u.ReceivedInvitations)
+            .HasForeignKey(gi => gi.InvitedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Item Invitation to User relationship
+
+        modelBuilder.Entity<ItemInvitation>()
+           .HasOne(gi => gi.InvitingUser)
+           .WithMany(u => u.SentItemInvitations)
+           .HasForeignKey(gi => gi.InvitingUserId)
+           .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ItemInvitation>()
+            .HasOne(gi => gi.InvitedUser)
+            .WithMany(u => u.ReceivedItemInvitations)
             .HasForeignKey(gi => gi.InvitedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 

@@ -8,6 +8,5 @@ public class MediatR_GetSentShopInvitationsQuery
     Guid userId
 ) : IRequest<ObjectResult>
 {
-   
     public Guid UserId { get; set; } = userId;
 }

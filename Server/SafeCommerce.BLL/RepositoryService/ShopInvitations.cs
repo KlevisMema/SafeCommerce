@@ -2,20 +2,20 @@
 using SafeCommerce.Utilities.IP;
 using Microsoft.AspNetCore.Http;
 using SafeCommerce.Utilities.Log;
+using SafeCommerce.BLL.Interfaces;
 using SafeCommerce.Utilities.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Utilities.Responses;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Invitation;
-using SafeCommerce.BLL.Interfaces;
 
 namespace SafeCommerce.BLL.RepositoryService;
 
 public class ShopInvitations
-    (
+(
     ApplicationDbContext db,
     IMapper mapper,
     ILogger<ShopInvitations> logger,
@@ -27,7 +27,11 @@ public class ShopInvitations
     httpContextAccessor
 ), IShopInvitations
 {
-    public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>> GetRecivedShopsInvitations(Guid userId)
+    public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>> 
+    GetRecivedShopsInvitations
+    (
+        Guid userId
+    )
     {
         try
         {
@@ -36,7 +40,7 @@ public class ShopInvitations
                                                         .Include(x => x.InvitedUser)
                                                         .Where(x => x.InvitedUserId == userId.ToString() && x.InvitationStatus == InvitationStatus.Pending)
                                                         .GroupBy(x => x.ShopId)
-                                                        .Select(group => group.First())
+                                                        .Select(shop => shop.First())
                                                         .ToListAsync();
 
             return Util_GenericResponse<List<DTO_RecivedInvitations>>.Response
@@ -63,7 +67,11 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<List<DTO_SentInvitations>>> GetSentGroupInvitations(Guid userId)
+    public async Task<Util_GenericResponse<List<DTO_SentInvitations>>> 
+    GetSentShopInvitations
+    (
+        Guid userId
+    )
     {
         try
         {
@@ -100,7 +108,11 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> SendInvitation(DTO_SendInvitationRequest sendInvitation)
+    public async Task<Util_GenericResponse<bool>> 
+    SendInvitation
+    (
+        DTO_SendInvitationRequest sendInvitation
+    )
     {
         try
         {
@@ -174,8 +186,8 @@ public class ShopInvitations
                 (
                     LogLevel.Error,
                     """
-                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the group with id {ShopId},
-                        but the user is already in the group!
+                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the shop with id {ShopId},
+                        but the user is already in the shop!
                         More details : {@invitationDto}
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -189,7 +201,7 @@ public class ShopInvitations
                 (
                    false,
                    false,
-                   "User is already memeber of the group",
+                   "User is already memeber of the shop",
                    null,
                    System.Net.HttpStatusCode.BadRequest
                 );
@@ -213,7 +225,7 @@ public class ShopInvitations
             (
                 LogLevel.Information,
                 """
-                    [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the group with id {shopId}.
+                    [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the shop with id {shopId}.
                     More details : {@invitationDto}
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -250,7 +262,11 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> AcceptInvitation(DTO_InvitationRequestActions accepInvitation)
+    public async Task<Util_GenericResponse<bool>> 
+    AcceptInvitation
+    (
+        DTO_InvitationRequestActions accepInvitation
+    )
     {
         try
         {
@@ -326,7 +342,7 @@ public class ShopInvitations
                 """
                      Request with IP {IP}.
                      Something went wrong User with id {invitedUserId} tried to accept the invitation with id {invitationId} made by 
-                     the user with id {invitingUserId} for the group with id {shopId} but the invitation with that 
+                     the user with id {invitingUserId} for the shop with id {shopId} but the invitation with that 
                      id doesn't exists. Dto {@DTO}
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -363,7 +379,11 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> RejectInvitation(DTO_InvitationRequestActions rejectInvitation)
+    public async Task<Util_GenericResponse<bool>> 
+    RejectInvitation
+    (
+        DTO_InvitationRequestActions rejectInvitation
+    )
     {
         try
         {
@@ -468,7 +488,11 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> DeleteSentInvitation(DTO_InvitationRequestActions deleteInvitation)
+    public async Task<Util_GenericResponse<bool>> 
+    DeleteSentInvitation
+    (
+        DTO_InvitationRequestActions deleteInvitation
+    )
     {
         try
         {
@@ -571,7 +595,12 @@ public class ShopInvitations
         }
     }
 
-    private async Task<bool> GenerealChecks(Guid shopId, Guid invitingUserId, Guid invitedUserId)
+    private async Task<bool> GenerealChecks
+    (
+        Guid shopId, 
+        Guid invitingUserId, 
+        Guid invitedUserId
+    )
     {
         var shop = await _db.Shops.FirstOrDefaultAsync(x => x.ShopId == shopId);
 
@@ -639,6 +668,23 @@ public class ShopInvitations
                 invitingUserId,
                 invitedUserId
             );
+
+            return false;
+        }
+
+        if (String.IsNullOrEmpty(invitedUser.PublicKey) || String.IsNullOrEmpty(invitedUser.Signature) || String.IsNullOrEmpty(invitedUser.SigningPublicKey))
+        {
+            _logger.Log
+           (
+               LogLevel.Error,
+               """
+                    [RESULT] : [IP] {IP} inviting user with [ID] {ID} send an invitation to user with id {invitedUser},
+                    who doesn't have cryptohraphic keys.
+                 """,
+               await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+               invitingUserId,
+               invitedUserId
+           );
 
             return false;
         }

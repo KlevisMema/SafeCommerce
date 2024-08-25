@@ -17,6 +17,9 @@ using SafeCommerce.MediatR.Actions.Queries.Item;
 using SafeCommerce.MediatR.Actions.Commands.Item;
 using SafeCommerce.DataTransormObject.Moderation;
 using Microsoft.AspNetCore.Authorization;
+using SafeCommerce.DataTransormObject.Shop;
+using SafeCommerce.MediatR.Actions.Commands.Shop;
+using SafeCommerce.MediatR.Actions.Queries.Shop;
 
 namespace SafeCommerce.API.Controllers;
 
@@ -30,7 +33,6 @@ namespace SafeCommerce.API.Controllers;
 /// Initializes a new instance of <see cref="ItemController"/>
 /// </remarks>
 /// <param name="mediator">The instance of mediator used to send commands and queries</param>
-[Authorize(Roles = "User")]
 [ServiceFilter(typeof(VerifyUser))]
 public class ItemController(IMediator mediator) : BaseController(mediator)
 {
@@ -41,6 +43,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user requesting item details.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>Detailed information about the specified item.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.GetItemDetails)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
@@ -64,13 +67,14 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="createItemDto">The details of the item to be created.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the item was successfully created.</returns>
+    [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.CreateItem)]
     [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_Item>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_Item>))]
+    public async Task<ActionResult<Util_GenericResponse<DTO_Item>>>
     CreateItem
     (
         [FromRoute] Guid userId,
@@ -92,6 +96,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="editItemDto">The new details to update the item with.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the item was successfully edited.</returns>
+    [Authorize(Roles = "User")]
     [HttpPut(Route_ItemRoutes.EditItem)]
     [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_Item>))]
@@ -103,7 +108,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     (
         [FromRoute] Guid itemId,
         [FromRoute] Guid userId,
-        [FromForm] DTO_UpdateItem editItemDto,
+        [FromBody] DTO_UpdateItem editItemDto,
         CancellationToken cancellationToken
     )
     {
@@ -120,6 +125,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user deleting the item.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the item was successfully deleted.</returns>
+    [Authorize(Roles = "User")]
     [HttpDelete(Route_ItemRoutes.DeleteItem)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -144,6 +150,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user requesting the items.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A list of items associated with the shop.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.GetItemsByShopId)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<List<DTO_Item>>))]
@@ -160,12 +167,34 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     }
 
     /// <summary>
+    /// Retrieves all items that are shared for everyone.
+    /// </summary>
+    /// <param name="userId">The identifier of the user requesting the items.</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <returns>A list of items shared with everyone.</returns>
+    [Authorize(Roles = "User")]
+    [HttpGet(Route_ItemRoutes.GetPublicSharedItems)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_PublicItem>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_PublicItem>>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>>
+    GetPublicSharedItems
+    (
+        [FromRoute] Guid userId,
+        CancellationToken cancellationToken
+    )
+    {
+        return await _mediator.Send(new MediatR_GetPublicSharedItemsQuery(userId.ToString()), cancellationToken);
+    }
+
+    /// <summary>
     /// Shares an item with another user or publicly.
     /// </summary>
     /// <param name="shareItemDto">The details of the item sharing.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <param name="userId">The id of the user making the request.</param>
     /// <returns>A boolean value indicating whether the item was successfully shared.</returns>
+    [Authorize(Roles = "User")]
     [HttpPost(Route_ItemRoutes.ShareItem)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -219,12 +248,12 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A boolean value indicating whether the items were retrieved succsessfully.</returns>
     [Authorize(Roles = "Moderator")]
-    [HttpPost(Route_ItemRoutes.GetItemsForModeration)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
+    [HttpGet(Route_ItemRoutes.GetItemsForModeration)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
-    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_Item>>>>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>>
     GetItemsSubjectForModeration
     (
         [FromRoute] Guid userId,
@@ -243,6 +272,7 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     /// <param name="userId">The identifier of the user whose items are to be retrieved.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     /// <returns>A list of items associated with the user.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet(Route_ItemRoutes.GetUserItems)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_Item>>))]
@@ -255,5 +285,57 @@ public class ItemController(IMediator mediator) : BaseController(mediator)
     )
     {
         return await _mediator.Send(new MediatR_GetUserItemsQuery(userId.ToString()), cancellationToken);
+    }
+
+    /// <summary>
+    /// Removes a user form the private shared item
+    /// </summary>
+    /// <param name="userId">The identifier of the owner of the shop.</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <param name="dTO_RemoveUserFromItem">Data object.</param>
+    /// <returns>A object value indicating whether the result was succsessful.</returns>
+    [Authorize(Roles = "User")]
+    [HttpDelete(Route_ShopRoutes.RemoveUserFromItem)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    RemoveUserFromItem
+    (
+        [FromRoute] Guid userId,
+        [FromBody] DTO_RemoveUserFromItem dTO_RemoveUserFromItem,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await _mediator.Send(new MediatR_RemoveUserFromItemCommand(userId, dTO_RemoveUserFromItem), cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves all members of the items.
+    /// </summary>
+    /// <param name="userId">The identifier of the user requesting item details.</param>
+    /// <param name="itemId">The id of the item</param>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    /// <returns>Information about the members of the specified shop.</returns>
+    [Authorize(Roles = "User")]
+    [HttpGet(Route_ShopRoutes.GetMembersOfTheItem)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemMembers>>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemMembers>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<IEnumerable<DTO_ItemMembers>>))]
+    public async Task<ActionResult<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>>
+    GetMembersOfTheItem
+    (
+        [FromRoute] Guid userId,
+        [FromRoute] Guid itemId,
+        CancellationToken cancellationToken
+    )
+    {
+        return await _mediator.Send(new MediatR_GetMembersOfTheItemQuery(itemId, userId), cancellationToken);
     }
 }

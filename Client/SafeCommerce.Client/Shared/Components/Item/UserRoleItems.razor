@@ -1,0 +1,165 @@
+﻿<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .mt-8 {
+        margin-top: 2rem;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
+    <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanel Text="My Items" Expanded="true">
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel Text="My Public Items Shared With Everyone" Expanded="true">
+                    <MudGrid>
+                        @foreach (var item in GroupedItems.MyPublicItemsSharedWithEveryone)
+                        {
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard>
+                                    <MudCardMedia Height="200" Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h6">@item.Name</MudText>
+                                        <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                                        <MudText Typo="Typo.caption">
+                                            @item.Description
+                                        </MudText>
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudTooltip Text="Edit">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditItemOpenDialog(item))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Delete">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteItemOpenDialog(item, true))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="My Private Items Shared With Private Shop" Expanded="false">
+                    <MudGrid>
+                        @foreach (var item in GroupedItems.MyPrivateItemsSharedWithPrivateShop)
+                        {
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard>
+                                    <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h6">@item.Name</MudText>
+                                        <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            @item.Description
+                                        </MudText>
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudTooltip Text="Edit">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditItemOpenDialog(item))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Delete">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteItemOpenDialog(item, true))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="My Public Items Shared With Public Shop" Expanded="false">
+                    <MudGrid>
+                        @foreach (var item in GroupedItems.MyPublicItemsSharedWithPublicShop)
+                        {
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard>
+                                    <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h6">@item.Name</MudText>
+                                        <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            @item.Description
+                                        </MudText>
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudTooltip Text="Edit">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditItemOpenDialog(item))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Delete">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteItemOpenDialog(item, true))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="My Private Items Shared With Specific Users" Expanded="false">
+                    <MudGrid>
+                        @foreach (var item in GroupedItems.MyPrivateItemsSharedWithSpecificUsers)
+                        {
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard>
+                                    <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h6">@item.Name</MudText>
+                                        <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            @item.Description
+                                        </MudText>
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudTooltip Text="Edit">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Secondary" OnClick="@(() => EditItemOpenDialog(item))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Delete">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteItemOpenDialog(item, true))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Invite">
+                                            <MudIconButton Icon="@Icons.Material.Filled.GroupAdd" Color="Color.Success" OnClick="@(() => OpenInvitationDialog(item, true))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="View Members">
+                                            <MudIconButton Icon="@Icons.Material.Filled.People" Color="Color.Tertiary" OnClick="@(() => OpenMembersDialog(item.ItemId, true))" Disabled="@(!item.IsPublic && item.MakePublic)" />
+                                        </MudTooltip>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Private Items Shared With Me" Expanded="false">
+            <MudGrid>
+                @foreach (var item in GroupedItems.PrivateItemsSharedWithMe)
+                {
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard>
+                            <MudCardMedia Class="mud-card-media" Image="@("data:image/*;base64," + item.Picture)" />
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">@item.Name</MudText>
+                                <MudText Typo="Typo.subtitle2">$@item.Price.ToString("0.00")</MudText>
+                                <MudText Typo="Typo.body2">
+                                    @item.Description
+                                </MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary">Buy Now</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+</MudContainer>

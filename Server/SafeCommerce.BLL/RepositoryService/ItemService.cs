@@ -9,17 +9,20 @@ using Microsoft.AspNetCore.Identity;
 using SafeCommerce.DataAccess.Models;
 using SafeCommerce.DataAccess.Context;
 using SafeCommerce.Utilities.Responses;
-using SafeShare.DataAccessLayer.Models;
+using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Item;
 using SafeCommerce.DataTransormObject.Moderation;
+using SafeCommerce.DataTransormObject.Shop;
 
 namespace SafeCommerce.BLL.RepositoryService;
+
 public class ItemService
 (
     ApplicationDbContext db,
     IMapper mapper,
     ILogger<ItemService> logger,
+    IItemInvitations ItemInvitations,
     UserManager<ApplicationUser> userManager,
     IHttpContextAccessor httpContextAccessor
 ) : Util_BaseContextDependencies<ApplicationDbContext, ItemService>
@@ -30,7 +33,8 @@ public class ItemService
     httpContextAccessor
 ), IItemService
 {
-    public async Task<Util_GenericResponse<bool>> CreateItem
+    public async Task<Util_GenericResponse<DTO_Item>>
+    CreateItem
     (
         DTO_CreateItem createItemDto,
         string ownerId,
@@ -38,7 +42,7 @@ public class ItemService
     )
     {
         using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
-
+        var item = new Item();
         try
         {
             ApplicationUser? user = await userManager.FindByIdAsync(ownerId);
@@ -54,14 +58,14 @@ public class ItemService
                     ownerId
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "User not found", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<DTO_Item>.Response(null, false, "User not found", null, System.Net.HttpStatusCode.NotFound);
             }
 
             string message = "";
 
             if (createItemDto.ItemShareOption == ItemShareOption.Shop)
             {
-                if (createItemDto.DTO_ShareItem is not null)
+                if (createItemDto.ShareItemToUser is not null)
                 {
                     _logger.LogCritical
                     (
@@ -73,7 +77,7 @@ public class ItemService
                        ownerId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
                 Shop? shop = await _db.Shops.Include(u => u.Owner).FirstOrDefaultAsync(sh => sh.ShopId == createItemDto.ShopId, cancellationToken);
@@ -89,7 +93,7 @@ public class ItemService
                         createItemDto.ShopId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Shop not found", null, System.Net.HttpStatusCode.NotFound);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Shop not found", null, System.Net.HttpStatusCode.NotFound);
                 }
 
                 if (shop.OwnerId != ownerId)
@@ -104,7 +108,7 @@ public class ItemService
                         createItemDto.ShopId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "You are not the owner of the shop", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "You are not the owner of the shop", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
                 if (shop.MakePublic && !shop.IsPublic && !shop.IsApproved)
@@ -118,7 +122,7 @@ public class ItemService
                         createItemDto.ShopId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, " Shop is not yet approved, item cant be added.", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, " Shop is not yet approved, item cant be added.", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
                 if
@@ -140,10 +144,10 @@ public class ItemService
                         createItemDto.ShopId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Item are not encrypted it can not be added in a private shop!", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Item are not encrypted it can not be added in a private shop!", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
-                Item? item = _mapper.Map<Item>(createItemDto);
+                item = _mapper.Map<Item>(createItemDto);
                 item.OwnerId = ownerId;
                 item.ShopId = shop.ShopId;
                 item.CreatedAt = DateTime.Now;
@@ -180,7 +184,7 @@ public class ItemService
             }
             else if (createItemDto.ItemShareOption == ItemShareOption.ToUser)
             {
-                if (createItemDto.DTO_ShareItem is null)
+                if (createItemDto.ShareItemToUser is null)
                 {
                     _logger.LogWarning
                    (
@@ -189,11 +193,11 @@ public class ItemService
                             [RESULT]: User information not provided {DTO_ShareItem}.
                              OwnerId: {OwnerId}
                         """,
-                       createItemDto.DTO_ShareItem,
+                       createItemDto.ShareItemToUser,
                        ownerId
                    );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "User information not provided, item can't be shared with the user not specified.", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "User information not provided, item can't be shared with the user not specified.", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
                 if (createItemDto.ShareItemToPrivateShop is not null)
@@ -208,10 +212,10 @@ public class ItemService
                        ownerId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
-                var invitedUser = await userManager.FindByIdAsync(createItemDto.DTO_ShareItem.UserId);
+                var invitedUser = await userManager.FindByIdAsync(createItemDto.ShareItemToUser.InvitedUserId.ToString());
 
                 if (invitedUser is null || invitedUser.IsDeleted || !invitedUser.EmailConfirmed)
                 {
@@ -221,14 +225,14 @@ public class ItemService
                             [ItemService]-[CreateItem Method] =>
                             [RESULT]: Invited user does not exists {userId}. OwnerId: {OwnerId}
                         """,
-                        createItemDto.DTO_ShareItem.UserId,
+                        createItemDto.ShareItemToUser.InvitedUserId,
                         ownerId
                      );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "User you are trying to invite does not exists.", null, System.Net.HttpStatusCode.NotFound);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "User you are trying to invite does not exists.", null, System.Net.HttpStatusCode.NotFound);
                 }
 
-                if (String.IsNullOrEmpty(createItemDto.DTO_ShareItem.EncryptedKey) || String.IsNullOrEmpty(createItemDto.DTO_ShareItem.EncryptedKeyNonce))
+                if (String.IsNullOrEmpty(createItemDto.ShareItemToUser.EncryptedKey) || String.IsNullOrEmpty(createItemDto.ShareItemToUser.EncryptedKeyNonce))
                 {
                     _logger.LogWarning
                     (
@@ -236,14 +240,14 @@ public class ItemService
                             [ItemService]-[CreateItem Method] =>
                             [RESULT]: Invited user keys missing from the client {userId}. OwnerId: {OwnerId}
                         """,
-                        createItemDto.DTO_ShareItem.UserId,
+                        createItemDto.ShareItemToUser.InvitedUserId,
                         ownerId
                      );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, try again later.", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Something went wrong, try again later.", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
-                var item = _mapper.Map<Item>(createItemDto);
+                item = _mapper.Map<Item>(createItemDto);
                 item.OwnerId = ownerId;
                 item.ShopId = null;
                 item.MakePublic = false;
@@ -252,17 +256,16 @@ public class ItemService
                 item.CreatedAt = DateTime.Now;
                 _db.Items.Add(item);
 
-                var itemShare = new ItemShare
+                createItemDto.ShareItemToUser.ItemId = item.ItemId;
+                var result = await ItemInvitations.SendInvitation(createItemDto.ShareItemToUser);
+
+                if (!result.Succsess)
                 {
-                    ItemId = item.ItemId,
-                    UserId = invitedUser.Id,
-                    EncryptedKeyNonce = createItemDto.DTO_ShareItem.EncryptedKeyNonce,
-                    EncryptedKey = createItemDto.DTO_ShareItem.EncryptedKey
-                };
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, result.Message, null, result.StatusCode);
+                }
 
-                _db.ItemShares.Add(itemShare);
-
-                message = "Item created successfully and shared with the user";
+                message = "Item created successfully and invitation has been sent to the user";
             }
             else
             {
@@ -285,10 +288,10 @@ public class ItemService
                         ownerId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
-                if (createItemDto.DTO_ShareItem is not null || createItemDto.ShareItemToPrivateShop is not null)
+                if (createItemDto.ShareItemToUser is not null || createItemDto.ShareItemToPrivateShop is not null)
                 {
                     _logger.LogCritical
                     (
@@ -300,10 +303,10 @@ public class ItemService
                        ownerId
                     );
 
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
+                    return Util_GenericResponse<DTO_Item>.Response(null, false, "Something went wrong, item can not be created. Try again later!", null, System.Net.HttpStatusCode.BadRequest);
                 }
 
-                var item = _mapper.Map<Item>(createItemDto);
+                item = _mapper.Map<Item>(createItemDto);
 
                 item.OwnerId = ownerId;
                 item.MakePublic = true;
@@ -330,24 +333,25 @@ public class ItemService
               ownerId
             );
 
-            return Util_GenericResponse<bool>.Response(true, true, message, null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<DTO_Item>.Response(_mapper.Map<DTO_Item>(item), true, message, null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
 
-            return await Util_LogsHelper<bool, ItemService>.ReturnInternalServerError(
+            return await Util_LogsHelper<DTO_Item, ItemService>.ReturnInternalServerError(
                 ex,
                 _logger,
                 $"""
                 Something went wrong in [ItemService]-[CreateItem Method], user with [ID] {ownerId} tried to create an item.
                 """,
-                false,
+                null,
                 _httpContextAccessor);
         }
     }
 
-    public async Task<Util_GenericResponse<DTO_Item>> UpdateItem
+    public async Task<Util_GenericResponse<DTO_Item>>
+    UpdateItem
     (
         Guid itemId,
         DTO_UpdateItem updateItemDto,
@@ -399,7 +403,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> DeleteItem
+    public async Task<Util_GenericResponse<bool>>
+    DeleteItem
     (
         Guid itemId,
         string ownerId,
@@ -408,7 +413,10 @@ public class ItemService
     {
         try
         {
-            var item = await _db.Items.Include(x => x.ModerationHistory).FirstOrDefaultAsync(i => i.ItemId == itemId && i.OwnerId == ownerId, cancellationToken);
+            var item = await _db.Items.Include(x => x.ModerationHistory)
+                .Include(x => x.ItemShares)
+                .Include(x => x.ItemInvitations)
+                .FirstOrDefaultAsync(i => i.ItemId == itemId && i.OwnerId == ownerId, cancellationToken);
             if (item == null)
             {
                 _logger.LogWarning(
@@ -420,7 +428,16 @@ public class ItemService
 
                 return Util_GenericResponse<bool>.Response(false, false, "Item not found or no permission to delete.", null, System.Net.HttpStatusCode.NotFound);
             }
-            _db.ModerationHistories.Remove(item.ModerationHistory!);
+
+            if (item.ModerationHistory is not null)
+                _db.ModerationHistories.Remove(item.ModerationHistory);
+
+            if (item.ItemShares is not null)
+                _db.ItemShares.RemoveRange(item.ItemShares);
+
+            if (item.ItemInvitations is not null)
+                _db.ItemInvitations.RemoveRange(item.ItemInvitations);
+
             _db.Items.Remove(item);
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -446,7 +463,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<DTO_Item>> GetItemById
+    public async Task<Util_GenericResponse<DTO_Item>>
+    GetItemById
     (
         Guid itemId,
         string userId,
@@ -495,7 +513,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetItemsByShopId
+    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>>
+    GetItemsByShopId
     (
         Guid shopId,
         string userId,
@@ -577,7 +596,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetItemsSubjectForModeration
+    public async Task<Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>>
+    GetItemsSubjectForModeration
     (
         Guid modeatorId,
         CancellationToken cancellationToken
@@ -596,7 +616,7 @@ public class ItemService
                 """,
                  modeatorId);
 
-                return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
             }
 
             bool isModerator = await userManager.IsInRoleAsync(user, Role.Moderator.ToString());
@@ -610,10 +630,12 @@ public class ItemService
                 """,
                  modeatorId);
 
-                return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(null, false, "User is not moderator", null, System.Net.HttpStatusCode.Unauthorized);
+                return Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>.Response(null, false, "User is not moderator", null, System.Net.HttpStatusCode.Unauthorized);
             }
 
-            var items = await _db.Items.Where(p => !p.IsPublic && p.MakePublic && !p.IsApproved).Select(i => _mapper.Map<DTO_Item>(i)).ToListAsync(cancellationToken);
+            var items = await _db.Items.Include(o => o.Owner)
+                                       .Include(sh => sh.Shop)
+                                       .Where(p => !p.IsPublic && p.MakePublic && !p.IsApproved).Select(i => _mapper.Map<DTO_ItemForModeration>(i)).ToListAsync(cancellationToken);
 
             _logger.LogInformation(
                 """
@@ -622,11 +644,11 @@ public class ItemService
                 """,
                  modeatorId);
 
-            return Util_GenericResponse<IEnumerable<DTO_Item>>.Response(items, true, "Items retrieved successfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<IEnumerable<DTO_ItemForModeration>>.Response(items, true, "Items retrieved successfully", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<IEnumerable<DTO_Item>, ItemService>.ReturnInternalServerError(
+            return await Util_LogsHelper<IEnumerable<DTO_ItemForModeration>, ItemService>.ReturnInternalServerError(
                 ex,
                 _logger,
                 $"""
@@ -637,7 +659,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> ShareItem
+    public async Task<Util_GenericResponse<bool>>
+    ShareItem
     (
         Guid ownerId,
         DTO_ShareItem shareItemDto,
@@ -693,38 +716,77 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> ModerateItem
+    public async Task<Util_GenericResponse<bool>>
+    ModerateItem
     (
         DTO_ModerateItem moderateItemDto,
         string moderatorId,
         CancellationToken cancellationToken
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
         try
         {
+            ApplicationUser? user = await _db.Users.FirstOrDefaultAsync(m => m.Id == moderatorId.ToString(), cancellationToken);
+
+            if (user == null)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[ModerateItem Method] =>
+                        [RESULT]:  Moderator with id {userId} does not exists.
+                    """,
+                 moderatorId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            bool isModerator = await userManager.IsInRoleAsync(user, Role.Moderator.ToString());
+
+            if (!isModerator)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[ModerateItem Method] =>
+                        [RESULT]:  user with id {userId} tried to access moderator only content.
+                    """,
+                 moderatorId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "User is not moderator.", null, System.Net.HttpStatusCode.Unauthorized);
+            }
+
             var item = await _db.Items.FindAsync(moderateItemDto.ItemId);
 
             if (item == null)
                 return Util_GenericResponse<bool>.Response(false, false, "Item not found.", null, System.Net.HttpStatusCode.NotFound);
 
+            if (item.IsPublic)
+                return Util_GenericResponse<bool>.Response(false, false, "Item is already public.", null, System.Net.HttpStatusCode.BadRequest);
+
             item.IsApproved = moderateItemDto.Approved;
             item.IsPublic = moderateItemDto.Approved;
+            item.MakePublic = moderateItemDto.Approved;
 
             _db.ModerationHistories.Add(new ModerationHistory
             {
                 ItemId = moderateItemDto.ItemId,
                 ModeratorId = moderatorId,
                 Approved = moderateItemDto.Approved,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ShopId = null
             });
 
             await _db.SaveChangesAsync(cancellationToken);
 
+            await transaction.CommitAsync(cancellationToken);
+
             return Util_GenericResponse<bool>.Response(true, true, "Item moderated successfully.", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync(cancellationToken);
+
             return await Util_LogsHelper<bool, ItemService>.ReturnInternalServerError(
                 ex,
                 _logger,
@@ -734,7 +796,8 @@ public class ItemService
         }
     }
 
-    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>> GetUserItems
+    public async Task<Util_GenericResponse<IEnumerable<DTO_Item>>>
+    GetUserItems
     (
         string userId,
         CancellationToken cancellationToken
@@ -743,10 +806,10 @@ public class ItemService
         try
         {
             var items = await _db.Items
-                .Where(i => i.OwnerId == userId || i.Shop.ShopShares.Any(ss => ss.UserId == userId))
                 .Include(i => i.Owner)
                 .Include(i => i.Shop)
                 .Include(i => i.ItemShares)
+                .Where(i => i.OwnerId == userId || i.ItemShares.Any(ss => ss.UserId == userId))
                 .ToListAsync(cancellationToken);
 
             List<Item> Items = new();
@@ -794,6 +857,197 @@ public class ItemService
                 null,
                 _httpContextAccessor
             );
+        }
+    }
+
+    public async Task<Util_GenericResponse<IEnumerable<DTO_PublicItem>>>
+    GetPublicSharedItems
+    (
+        string userId,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            var items = await _db.Items.Where(i => i.ShopId == null && i.MakePublic == true && i.IsPublic == true && i.IsApproved == true).ToListAsync(cancellationToken);
+
+            var itemDtos = _mapper.Map<List<DTO_PublicItem>>(items);
+
+            return Util_GenericResponse<IEnumerable<DTO_PublicItem>>.Response(itemDtos, true, "Items retrieved successfully.", null, System.Net.HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<IEnumerable<DTO_PublicItem>, ItemService>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"Error retrieving public items for user {userId}.",
+                null,
+                _httpContextAccessor
+            );
+        }
+    }
+
+    public async Task<Util_GenericResponse<IEnumerable<DTO_ItemMembers>>>
+    GetMembersOfTheItem
+    (
+        Guid itemId,
+        Guid ownerId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            ApplicationUser? owner = await userManager.FindByIdAsync(ownerId.ToString());
+
+            if (owner == null)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[GetMembersOfTheItem Method] =>
+                        [RESULT]:  Owner with id {ownerId} does not exists.
+                    """,
+                 ownerId);
+
+                return Util_GenericResponse<IEnumerable<DTO_ItemMembers>>.Response(null, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            Item? shop = await _db.Items.Include(x => x.ItemShares).ThenInclude(u => u.User).FirstOrDefaultAsync(sh => sh.ItemId == itemId, cancellationToken);
+
+            if (shop == null)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[GetMembersOfTheItem Method] =>
+                        [RESULT]:  Item with id {itemId} does not exists.
+                        """,
+              itemId);
+
+                return Util_GenericResponse<IEnumerable<DTO_ItemMembers>>.Response(null, false, "Item does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            IEnumerable<DTO_ItemMembers> shopMembers = shop.ItemShares.Select(sh => new DTO_ItemMembers
+            {
+                UserId = sh.UserId,
+                UserName = sh.User.FullName,
+                PublicKey = sh.User.PublicKey,
+                Signature = sh.User.Signature,
+                SigningPublicKey = sh.User.SigningPublicKey,
+            });
+
+            _logger.LogInformation(
+                """
+                        [ItemService]-[GetMembersOfTheItem Method] =>
+                        [RESULT]: Owner {ownerId} retieved all the members of item {itemId}.
+                        """,
+                ownerId,
+              itemId);
+
+            return Util_GenericResponse<IEnumerable<DTO_ItemMembers>>.Response(shopMembers, true, "Users retrieved succsessfully", null, System.Net.HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<IEnumerable<DTO_ItemMembers>, ItemService>.ReturnInternalServerError(
+                ex,
+                _logger,
+                $"Error getting all member of the item with id {itemId} by the owner with id {ownerId}",
+                null,
+                _httpContextAccessor);
+        }
+    }
+
+    public async Task<Util_GenericResponse<bool>>
+    RemoveUserFromIem
+    (
+        Guid ownerId,
+        DTO_RemoveUserFromItem removeUserFromItem,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            var owner = await userManager.FindByIdAsync(ownerId.ToString());
+
+            if (owner == null)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[RemoveUserFromIem Method] =>
+                        [RESULT]:  Owner with id {ownerId} does not exists.
+                    """,
+                 ownerId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            var userToBeRemoved = await userManager.FindByIdAsync(removeUserFromItem.UserId.ToString());
+
+            if (userToBeRemoved == null)
+            {
+                _logger.LogError(
+               """
+                        [ItemService]-[RemoveUserFromIem Method] =>
+                        [RESULT]:  User with id {userId} does not exists.
+                    """,
+                removeUserFromItem.UserId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "User does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            var item = await _db.Items.Include(x => x.ItemShares).FirstOrDefaultAsync(sh => sh.ItemId == removeUserFromItem.ItemId, cancellationToken);
+
+            if (item == null)
+            {
+                _logger.LogError(
+                """
+                        [ItemService]-[RemoveUserFromIem Method] =>
+                        [RESULT]:  Item with id {itemId} does not exists.
+                        """,
+              removeUserFromItem.ItemId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "Item does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            if (ownerId == removeUserFromItem.UserId)
+                return Util_GenericResponse<bool>.Response(true, true, "Owner cant be removed", null, System.Net.HttpStatusCode.BadRequest);
+
+            if (!item.ItemShares!.Any(x => x.UserId == removeUserFromItem.UserId.ToString()))
+            {
+
+                _logger.LogError(
+                """
+                        [ItemService]-[RemoveUserFromIem Method] =>
+                        [RESULT]: User with {userId} does not exists in item with id {itemId}.
+                    """,
+                removeUserFromItem.UserId,
+                removeUserFromItem.ItemId);
+
+                return Util_GenericResponse<bool>.Response(false, false, "Item does not exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            var shopShareDetach = item.ItemShares!.FirstOrDefault(x => x.ItemId == removeUserFromItem.ItemId && x.UserId == removeUserFromItem.UserId.ToString());
+
+            if (shopShareDetach is not null)
+                _db.ItemShares.Remove(shopShareDetach);
+
+            await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return Util_GenericResponse<bool>.Response(true, true, "User removed succsessfully", null, System.Net.HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+
+            return await Util_LogsHelper<bool, ItemService>.ReturnInternalServerError(
+                ex,
+                _logger,
+                $"Error removing user with id {removeUserFromItem.UserId} from item {removeUserFromItem.ItemId} by owner {ownerId}.",
+                false,
+                _httpContextAccessor);
         }
     }
 }

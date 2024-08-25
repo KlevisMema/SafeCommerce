@@ -18,7 +18,13 @@ public class ShopInvitationProxyService
     IRequestConfigurationProxyService requestConfigurationProxyService
 ) : IShopInvitationProxyService
 {
-    public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>> GetShopsInvitations(string userId, string userIp, string jwtToken)
+    public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>> 
+    GetShopsInvitations
+    (
+        string userId, 
+        string userIp, 
+        string jwtToken
+    )
     {
         HttpResponseMessage response = new();
 
@@ -33,7 +39,7 @@ public class ShopInvitationProxyService
 
             HttpClient? httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetBaseAddrOfMainApi());
 
-            string? requestUrl = $"{BaseRoute.RouteShopInvitationForClient}{Route_InvitationRoute.GetShopsInvitations
+            string? requestUrl = $"{BaseRoute.RouteInvitationForClient}{Route_InvitationRoute.GetShopsInvitations
                                                                .Replace("{userId}", userId.ToString())}";
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Get, requestUrl);
@@ -87,7 +93,13 @@ public class ShopInvitationProxyService
         }
     }
 
-    public async Task<Util_GenericResponse<List<DTO_SentInvitations>>> GetSentShopInvitations(string userId, string userIp, string jwtToken)
+    public async Task<Util_GenericResponse<List<DTO_SentInvitations>>> 
+    GetSentShopInvitations
+    (
+        string userId, 
+        string userIp, 
+        string jwtToken
+    )
     {
         HttpResponseMessage response = new();
 
@@ -103,7 +115,7 @@ public class ShopInvitationProxyService
             HttpClient? httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetBaseAddrOfMainApi());
 
 
-            string? requestUrl = $"{BaseRoute.RouteShopInvitationForClient}{Route_InvitationRoute.GetSentShopInvitations
+            string? requestUrl = $"{BaseRoute.RouteInvitationForClient}{Route_InvitationRoute.GetSentShopInvitations
                                                               .Replace("{userId}", userId.ToString())}";
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Get, requestUrl);
@@ -157,7 +169,16 @@ public class ShopInvitationProxyService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> SendInvitation(string userId, string userIp, string jwtToken, string fogeryToken, string aspNetForgeryToken, DTO_SendInvitationRequest dTO_SendInvitation)
+    public async Task<Util_GenericResponse<bool>> 
+    SendInvitation
+    (
+        string userId, 
+        string userIp, 
+        string jwtToken, 
+        string fogeryToken, 
+        string aspNetForgeryToken, 
+        DTO_SendInvitationRequest dTO_SendInvitation
+    )
     {
         HttpResponseMessage response = new();
 
@@ -186,7 +207,7 @@ public class ShopInvitationProxyService
             var content = new StringContent(JsonSerializer.Serialize(dTO_SendInvitation), Encoding.UTF8, "application/json");
 
 
-            string? requestUrl = $"{BaseRoute.RouteShopInvitationForClient}{Route_InvitationRoute.SendInvitation
+            string? requestUrl = $"{BaseRoute.RouteInvitationForClient}{Route_InvitationRoute.SendInvitation
                                                              .Replace("{userId}", userId.ToString())}";
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Post, requestUrl)
@@ -245,7 +266,16 @@ public class ShopInvitationProxyService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> AcceptInvitation(string userId, string userIp, string jwtToken, string fogeryToken, string aspNetForgeryToken, DTO_InvitationRequestActions acceptInvitationRequest)
+    public async Task<Util_GenericResponse<bool>> 
+    AcceptInvitation
+    (
+        string userId, 
+        string userIp, 
+        string jwtToken, 
+        string fogeryToken, 
+        string aspNetForgeryToken, 
+        DTO_InvitationRequestActions acceptInvitationRequest
+    )
     {
         HttpResponseMessage response = new();
 
@@ -273,7 +303,7 @@ public class ShopInvitationProxyService
 
             var content = new StringContent(JsonSerializer.Serialize(acceptInvitationRequest), Encoding.UTF8, "application/json");
 
-            string? requestUrl = $"{BaseRoute.RouteShopInvitationForClient}{Route_InvitationRoute.AcceptInvitation
+            string? requestUrl = $"{BaseRoute.RouteInvitationForClient}{Route_InvitationRoute.AcceptInvitation
                                                              .Replace("{userId}", userId.ToString())}";
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Post, requestUrl)
@@ -332,7 +362,16 @@ public class ShopInvitationProxyService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> RejectInvitation(string userId, string userIp, string jwtToken, string fogeryToken, string aspNetForgeryToken, DTO_InvitationRequestActions rejectInvitationRequest)
+    public async Task<Util_GenericResponse<bool>> 
+    RejectInvitation
+    (
+        string userId, 
+        string userIp, 
+        string jwtToken, 
+        string fogeryToken, 
+        string aspNetForgeryToken, 
+        DTO_InvitationRequestActions rejectInvitationRequest
+    )
     {
         HttpResponseMessage response = new();
 
@@ -360,7 +399,7 @@ public class ShopInvitationProxyService
 
             var content = new StringContent(JsonSerializer.Serialize(rejectInvitationRequest), Encoding.UTF8, "application/json");
 
-            string? requestUrl = $"{BaseRoute.RouteShopInvitationForClient}{Route_InvitationRoute.RejectInvitation
+            string? requestUrl = $"{BaseRoute.RouteInvitationForClient}{Route_InvitationRoute.RejectInvitation
                                                              .Replace("{userId}", userId.ToString())}";
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Post, requestUrl)
@@ -419,7 +458,16 @@ public class ShopInvitationProxyService
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> DeleteInvitation(string userId, string userIp, string jwtToken, string fogeryToken, string aspNetForgeryToken, DTO_InvitationRequestActions deleteInvitationRequest)
+    public async Task<Util_GenericResponse<bool>> 
+    DeleteInvitation
+    (
+        string userId, 
+        string userIp, 
+        string jwtToken, 
+        string fogeryToken, 
+        string aspNetForgeryToken, 
+        DTO_InvitationRequestActions deleteInvitationRequest
+    )
     {
         HttpResponseMessage response = new();
 
@@ -447,7 +495,7 @@ public class ShopInvitationProxyService
 
             var content = new StringContent(JsonSerializer.Serialize(deleteInvitationRequest), Encoding.UTF8, "application/json");
 
-            string? requestUrl = $"{BaseRoute.RouteShopInvitationForClient}{Route_InvitationRoute.DeleteInvitation
+            string? requestUrl = $"{BaseRoute.RouteInvitationForClient}{Route_InvitationRoute.DeleteInvitation
                                                               .Replace("{userId}", userId.ToString())}";
 
             HttpRequestMessage? requestMessage = new(HttpMethod.Delete, requestUrl)

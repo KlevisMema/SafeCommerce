@@ -19,7 +19,8 @@ public class ShopInvitatonProxyController
 ) : ControllerBase
 {
     [HttpGet(Route_InvitationRoute.ProxyGetShopsInvitations)]
-    public async Task<ActionResult<Util_GenericResponse<List<DTO_RecivedInvitations>>>> GetShopsInvitations()
+    public async Task<ActionResult<Util_GenericResponse<List<DTO_RecivedInvitations>>>> 
+    GetShopsInvitations()
     {
         var result = await _shopInvitationProxyService.GetShopsInvitations
         (
@@ -32,7 +33,8 @@ public class ShopInvitatonProxyController
     }
 
     [HttpGet(Route_InvitationRoute.ProxyGetSentShopInvitations)]
-    public async Task<ActionResult<Util_GenericResponse<List<DTO_SentInvitations>>>> GetSentGroupInvitations()
+    public async Task<ActionResult<Util_GenericResponse<List<DTO_SentInvitations>>>> 
+    GetSentGroupInvitations()
     {
         var result = await _shopInvitationProxyService.GetSentShopInvitations
         (
@@ -45,7 +47,11 @@ public class ShopInvitatonProxyController
     }
 
     [HttpPost(Route_InvitationRoute.ProxySendInvitation)]
-    public async Task<ActionResult<Util_GenericResponse<bool>>> SendInvitation([FromBody] DTO_SendInvitationRequest dTO_SendInvitation)
+    public async Task<ActionResult<Util_GenericResponse<bool>>> 
+    SendInvitation
+    (
+        [FromBody] DTO_SendInvitationRequest dTO_SendInvitation
+    )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -64,7 +70,11 @@ public class ShopInvitatonProxyController
     }
 
     [HttpPost(Route_InvitationRoute.ProxyAcceptInvitation)]
-    public async Task<ActionResult<Util_GenericResponse<bool>>> AcceptInvitation([FromBody] DTO_InvitationRequestActions acceptInvitationRequest)
+    public async Task<ActionResult<Util_GenericResponse<bool>>> 
+    AcceptInvitation
+    (
+        [FromBody] DTO_InvitationRequestActions acceptInvitationRequest
+    )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -83,7 +93,11 @@ public class ShopInvitatonProxyController
     }
 
     [HttpPost(Route_InvitationRoute.ProxyRejectInvitation)]
-    public async Task<ActionResult<Util_GenericResponse<bool>>> RejectInvitation([FromBody] DTO_InvitationRequestActions rejectInvitationRequest)
+    public async Task<ActionResult<Util_GenericResponse<bool>>> 
+    RejectInvitation
+    (
+        [FromBody] DTO_InvitationRequestActions rejectInvitationRequest
+    )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -103,7 +117,11 @@ public class ShopInvitatonProxyController
     }
 
     [HttpDelete(Route_InvitationRoute.ProxyDeleteInvitation)]
-    public async Task<ActionResult<Util_GenericResponse<bool>>> DeleteInvitation([FromBody] DTO_InvitationRequestActions deleteInvitationRequest)
+    public async Task<ActionResult<Util_GenericResponse<bool>>> 
+    DeleteInvitation
+    (
+        [FromBody] DTO_InvitationRequestActions deleteInvitationRequest
+    )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);

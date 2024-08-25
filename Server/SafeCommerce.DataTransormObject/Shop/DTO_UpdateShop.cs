@@ -1,11 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SafeCommerce.DataTransormObject.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeCommerce.DataTransormObject.Shop;
 public class DTO_UpdateShop
 {
+    [NoXss]
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
+
+    [NoXss]
     [Required]
     [StringLength(400)]
     public string Description { get; set; } = string.Empty;

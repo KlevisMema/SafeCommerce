@@ -276,29 +276,6 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("SafeCommerce.DataAccess.Models.LogEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LogEntries");
-                });
-
             modelBuilder.Entity("SafeCommerce.DataAccess.Models.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -337,7 +314,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Item", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.Item", b =>
                 {
                     b.Property<Guid>("ItemId")
                         .ValueGeneratedOnAdd()
@@ -409,13 +386,16 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("Items");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ItemShare", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ItemShare", b =>
                 {
                     b.Property<Guid>("ItemId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("EncryptedKey")
                         .HasColumnType("nvarchar(max)");
@@ -426,6 +406,9 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<Guid>("ItemShareId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("ItemId", "UserId");
 
                     b.HasIndex("UserId");
@@ -433,37 +416,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("ItemShares");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Metadata", b =>
-                {
-                    b.Property<Guid>("MetadataId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("MetadataId");
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("Metadata");
-                });
-
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ModerationHistory", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ModerationHistory", b =>
                 {
                     b.Property<Guid>("ModerationId")
                         .ValueGeneratedOnAdd()
@@ -507,7 +460,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("ModerationHistories");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Shop", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.Shop", b =>
                 {
                     b.Property<Guid>("ShopId")
                         .ValueGeneratedOnAdd()
@@ -567,7 +520,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("Shops");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopInvitation", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ShopInvitation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -610,7 +563,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("ShopInvitations");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopShare", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ShopShare", b =>
                 {
                     b.Property<Guid>("ShopId")
                         .HasColumnType("uniqueidentifier");
@@ -638,6 +591,49 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ShopShares");
+                });
+
+            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ItemInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EncryptedKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EncryptedKeyNonce")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InvitationStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InvitedUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("InvitingUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitedUserId");
+
+                    b.HasIndex("InvitingUserId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("ItemInvitations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -702,7 +698,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Item", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.Item", b =>
                 {
                     b.HasOne("SafeCommerce.DataAccess.Models.ApplicationUser", "Owner")
                         .WithMany("Items")
@@ -710,7 +706,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Shop", "Shop")
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Shop", "Shop")
                         .WithMany("Items")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -720,9 +716,9 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ItemShare", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ItemShare", b =>
                 {
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Item", "Item")
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Item", "Item")
                         .WithMany("ItemShares")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -739,22 +735,11 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Metadata", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ModerationHistory", b =>
                 {
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Item", "Item")
-                        .WithMany("Metadata")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-                });
-
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ModerationHistory", b =>
-                {
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Item", "Item")
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Item", "Item")
                         .WithOne("ModerationHistory")
-                        .HasForeignKey("SafeShare.DataAccessLayer.Models.ModerationHistory", "ItemId")
+                        .HasForeignKey("SafeCommerce.DataAccessLayer.Models.ModerationHistory", "ItemId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SafeCommerce.DataAccess.Models.ApplicationUser", "Moderator")
@@ -763,9 +748,9 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Shop", "Shop")
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Shop", "Shop")
                         .WithOne("ModerationHistory")
-                        .HasForeignKey("SafeShare.DataAccessLayer.Models.ModerationHistory", "ShopId")
+                        .HasForeignKey("SafeCommerce.DataAccessLayer.Models.ModerationHistory", "ShopId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Item");
@@ -775,7 +760,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Shop", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.Shop", b =>
                 {
                     b.HasOne("SafeCommerce.DataAccess.Models.ApplicationUser", "Owner")
                         .WithMany("Shops")
@@ -786,7 +771,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopInvitation", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ShopInvitation", b =>
                 {
                     b.HasOne("SafeCommerce.DataAccess.Models.ApplicationUser", "InvitedUser")
                         .WithMany("ReceivedInvitations")
@@ -800,7 +785,7 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Shop", "Shop")
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Shop", "Shop")
                         .WithMany("ShopInvitations")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -813,9 +798,9 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("Shop");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ShopShare", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.ShopShare", b =>
                 {
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Shop", "Shop")
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Shop", "Shop")
                         .WithMany("ShopShares")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -832,27 +817,58 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ItemInvitation", b =>
+                {
+                    b.HasOne("SafeCommerce.DataAccess.Models.ApplicationUser", "InvitedUser")
+                        .WithMany("ReceivedItemInvitations")
+                        .HasForeignKey("InvitedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SafeCommerce.DataAccess.Models.ApplicationUser", "InvitingUser")
+                        .WithMany("SentItemInvitations")
+                        .HasForeignKey("InvitingUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SafeCommerce.DataAccessLayer.Models.Item", "Item")
+                        .WithMany("ItemInvitations")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InvitedUser");
+
+                    b.Navigation("InvitingUser");
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("SafeCommerce.DataAccess.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Items");
 
                     b.Navigation("ReceivedInvitations");
 
+                    b.Navigation("ReceivedItemInvitations");
+
                     b.Navigation("SentInvitations");
+
+                    b.Navigation("SentItemInvitations");
 
                     b.Navigation("Shops");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Item", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.Item", b =>
                 {
-                    b.Navigation("ItemShares");
+                    b.Navigation("ItemInvitations");
 
-                    b.Navigation("Metadata");
+                    b.Navigation("ItemShares");
 
                     b.Navigation("ModerationHistory");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Shop", b =>
+            modelBuilder.Entity("SafeCommerce.DataAccessLayer.Models.Shop", b =>
                 {
                     b.Navigation("Items");
 

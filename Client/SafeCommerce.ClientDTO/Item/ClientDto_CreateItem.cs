@@ -1,18 +1,22 @@
 ﻿using SafeCommerce.ClientDTO.Enums;
+using SafeCommerce.ClientDTO.Validators;
 using System.ComponentModel.DataAnnotations;
 
 namespace SafeCommerce.ClientDTO.Item;
 
 public class ClientDto_CreateItem
 {
+    [NoXss]
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    [NoXss]
     [Required]
     [StringLength(400)]
     public string Description { get; set; } = string.Empty;
 
+    [NoXss]
     [Required]
     [Range(0, 100000)]
     public decimal? Price { get; set; }
@@ -29,6 +33,6 @@ public class ClientDto_CreateItem
 
     public ItemShareOption ItemShareOption { get; set; }
 
-    public ClientDto_ShareItem? DTO_ShareItem { get; set; }
+    public ClientDto_SendItemInvitationRequest? ShareItemToUser { get; set; }
     public List<ClientDto_ShareItem>? ShareItemToPrivateShop { get; set; }
 }

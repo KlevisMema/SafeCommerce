@@ -27,6 +27,6 @@ internal static class LogOutHelper
 
         await authenticationService.LogoutUser();
         await localStorageService.RemoveItemAsync("UserData");
-        navigationManager.NavigateTo("/");
+        navigationManager.NavigateTo("/", true);
     }
 }

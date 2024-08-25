@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SafeCommerce.BLL.Interfaces;
 using SafeCommerce.Utilities.Responses;
 using SafeCommerce.MediatR.Dependencies;
+using SafeCommerce.DataTransormObject.Item;
 using SafeCommerce.MediatR.Actions.Commands.Item;
 
 namespace SafeCommerce.MediatR.Handlers.CommandsHandlers.Item;
@@ -21,6 +22,6 @@ public class MediatR_CreateItemCommandHandler
     {
         var result = await _service.CreateItem(request.CreateItemDto, request.UserId, cancellationToken);
 
-        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
+        return Util_GenericControllerResponse<DTO_Item>.ControllerResponse(result);
     }
 }

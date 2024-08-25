@@ -30,9 +30,9 @@ public partial class Items
 
             foreach (var item in getListItems.Value)
             {
-                var isOwnerValid = await this.JsRuntime.InvokeAsync<bool>("verifyPublicKey", item.OwnerPublicKey, item.OwnerSigningPublicKey, item.OwnerSignature);
+                bool isValidCrypoKey = await this.JsRuntime.InvokeAsync<bool>("verifyPublicKey", item.OwnerPublicKey, item.OwnerSigningPublicKey, item.OwnerSignature);
 
-                if (isOwnerValid)
+                if (isValidCrypoKey)
                 {
                     if (!item.MakePublic)
                     {
@@ -44,13 +44,15 @@ public partial class Items
                             decryptedItem.Price = decimal.Parse(decryptedItem.PriceDecrypted);
                         }
                         else
+                        {
                             decryptedItem = await this.JsRuntime.InvokeAsync<ClientDto_Item>("decryptItemData", item, userId);
+                            decryptedItem.Price = decimal.Parse(decryptedItem.PriceDecrypted);
+                        }
 
                         this.ListItems.Add(decryptedItem);
                         continue;
                     }
-
-                    this.ListItems = getListItems.Value.ToList();
+                    this.ListItems.Add(item);
                 }
             }
         }

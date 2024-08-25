@@ -30,6 +30,8 @@ app.UseMiddleware<API_Helper_ProxyForwardAntiForgeryToken>();
 
 app.UseMiddleware<API_Helper_CookieForwardingToClientMiddleware>();
 
+app.UseMiddleware<API_HELPER_MetadataLoggingMiddleware>();
+
 app.MapControllers();
 
 app.UseHsts();
