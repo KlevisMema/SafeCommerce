@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SafeCommerce.DataTransormObject.Item;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeCommerce.DataTransormObject.Invitation;
 
@@ -12,4 +13,5 @@ public class DTO_SendInvitationRequest
     public Guid ShopId { get; set; }
     public string? EncryptedKey { get; set; }
     public string? EncryptedKeyNonce { get; set; }
+    public ICollection<DTO_Item>? Items { get; set; }
 }

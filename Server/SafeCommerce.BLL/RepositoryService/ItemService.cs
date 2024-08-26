@@ -13,7 +13,6 @@ using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Item;
 using SafeCommerce.DataTransormObject.Moderation;
-using SafeCommerce.DataTransormObject.Shop;
 
 namespace SafeCommerce.BLL.RepositoryService;
 
@@ -167,7 +166,6 @@ public class ItemService
 
                     foreach (DTO_ShareItem member in createItemDto.ShareItemToPrivateShop)
                     {
-
                         itemShares.Add(new ItemShare
                         {
                             ItemId = item.ItemId,
@@ -523,12 +521,6 @@ public class ItemService
     {
         try
         {
-            //var items = await _db.Items
-            //    .Where(i => i.ShopId == shopId && (i.OwnerId == userId || i.Shop.ShopShares.Any(ss => ss.UserId == userId)))
-            //    .Include(i => i.Owner)
-            //    .Select(i => _mapper.Map<DTO_Item>(i))
-            //    .ToListAsync(cancellationToken);
-
             var items = await _db.Items
                 .Where(i => i.ShopId == shopId)
                 .Include(i => i.Owner)

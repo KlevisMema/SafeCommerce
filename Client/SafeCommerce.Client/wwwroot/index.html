@@ -546,6 +546,15 @@
         async function deleteItemConfirm(itemId) {
             await deleteItemKeyPairFromDatabase(itemId);
         }
+
+        async function decryptMyItemSymmericKey(userId, itemId) {
+            const user = await getUserKeyPairFromDatabase(userId);
+            var item = await getItemKeyPairFromDatabase(itemId);
+
+            const symmetricKeyBase64 = await decryptSymmetricKeyWithPrivateKey(item.encryptedSymmetricKey, user.keyPair.privateKey, user.keyPair.publicKey, item.keyNonce);
+
+            return symmetricKeyBase64;
+        }
     </script>
 
     <script src="js/tweetnacl-js-1.0.3/nacl-fast.js" id="tweetnacl-fast"></script>
