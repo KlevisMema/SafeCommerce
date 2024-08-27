@@ -88,7 +88,7 @@ internal static class API_Helper_ProgramStartup
             Services.AddHttpContextAccessor();
 
             Services.AddDataProtection()
-                    .SetApplicationName("SafeShare")
+                    .SetApplicationName("SafeCommerce")
                     .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
                     .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
                     {
@@ -198,6 +198,8 @@ internal static class API_Helper_ProgramStartup
     )
     {
         Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+        Services.AddScoped<IPasswordHasher<ApplicationUser>, Argon2PasswordHasher<ApplicationUser>>();
 
         Services.AddIdentity<ApplicationUser, IdentityRole>
         (

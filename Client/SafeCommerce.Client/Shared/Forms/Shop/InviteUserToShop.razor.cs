@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Components;
 using SafeCommerce.ClientDTO.Invitation;
 using SafeCommerce.ClientServices.Interfaces;
 using SafeCommerce.ClientDTO.AccountManagment;
+using SafeCommerce.ClientDTO.Item;
+using SafeCommerce.Client.Pages.Item;
 
 namespace SafeCommerce.Client.Shared.Forms.Shop;
 
@@ -22,7 +24,7 @@ public partial class InviteUserToShop
     [Parameter] public bool IsPrivateShop { get; set; }
     [Parameter] public ClientDto_Shop? Shop { get; set; }
     [Parameter] public InvitationReason InvitationReason { get; set; }
-    [Parameter] public EventCallback<ClientDto_UserSearched> OnUserSelected { get; set; } 
+    [Parameter] public EventCallback<ClientDto_UserSearched> OnUserSelected { get; set; }
 
     private bool _processing = false;
     private ClientDto_UserSearched? SelectedUser { get; set; }
@@ -82,6 +84,27 @@ public partial class InviteUserToShop
 
             SendInvitationRequest.EncryptedKey = encryptedKeysForUser.EncryptedKey;
             SendInvitationRequest.EncryptedKeyNonce = encryptedKeysForUser.EncryptedKeyNonce;
+
+            if (Shop.Items is not null && Shop.Items.Count != 0)
+            {
+                SendInvitationRequest.Items = [];
+                foreach (var item in Shop.Items)
+                {
+                    string? decryptedItemSymmetricKey = await JsRuntime.InvokeAsync<string>("decryptMyItemSymmericKey", senderUserId, item.ItemId);
+
+                    if (!String.IsNullOrEmpty(decryptedItemSymmetricKey))
+                    {
+                        ClientDto_ShareItem? shareItemWithUser = await JsRuntime.InvokeAsync<ClientDto_ShareItem>("shareItemToUser", SelectedUser.PublicKey, decryptedItemSymmetricKey, senderUserId);
+                        
+                        SendInvitationRequest.Items.Add(new ClientDto_Item
+                        {
+                             ItemId = item.ItemId,
+                             EncryptedKey = shareItemWithUser?.EncryptedKey,
+                             EncryptedKeyNonce = shareItemWithUser?.EncryptedKeyNonce,
+                        });
+                    }
+                }
+            }
         }
 
         var SendInvitationResult = await ServiceInvitation.SendInvitation(SendInvitationRequest);

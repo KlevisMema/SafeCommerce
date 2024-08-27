@@ -258,14 +258,15 @@ public partial class UserRoleShops
 
                 }
 
-                var parameters = new DialogParameters<List<ClientDto_ShopShare>>
-                {
-                    { "Items", ShopItems },
-                };
-
-                var dialog = await DialogService.ShowAsync<ShopPreview>("Preview Shop", parameters, DialogHelper.BigDialog());
-                await dialog.Result;
             }
+
+            var parameters = new DialogParameters<List<ClientDto_ShopShare>>
+            {
+                { "Items", ShopItems },
+            };
+
+            var dialog = await DialogService.ShowAsync<ShopPreview>("Preview Shop", parameters, DialogHelper.BigDialog());
+            await dialog.Result;
         }
         catch (Exception ex)
         {

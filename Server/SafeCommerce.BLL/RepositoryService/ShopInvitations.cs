@@ -11,6 +11,7 @@ using SafeCommerce.Utilities.Responses;
 using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Invitation;
+using SafeShare.DataAccessLayer.Models;
 
 namespace SafeCommerce.BLL.RepositoryService;
 
@@ -27,7 +28,7 @@ public class ShopInvitations
     httpContextAccessor
 ), IShopInvitations
 {
-    public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>> 
+    public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>>
     GetRecivedShopsInvitations
     (
         Guid userId
@@ -67,7 +68,7 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<List<DTO_SentInvitations>>> 
+    public async Task<Util_GenericResponse<List<DTO_SentInvitations>>>
     GetSentShopInvitations
     (
         Guid userId
@@ -108,12 +109,14 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> 
+    public async Task<Util_GenericResponse<bool>>
     SendInvitation
     (
         DTO_SendInvitationRequest sendInvitation
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
         try
         {
             var checkPassed = await GenerealChecks(sendInvitation.ShopId, sendInvitation.InvitingUserId, sendInvitation.InvitedUserId);
@@ -219,6 +222,26 @@ public class ShopInvitations
             };
 
             await _db.ShopInvitations.AddAsync(invitation);
+
+            if (sendInvitation.Items is not null && sendInvitation.Items.Count != 0)
+            {
+                foreach (var item in sendInvitation.Items)
+                {
+                    var itemInvitation = new ItemInvitation
+                    {
+                        InvitingUserId = sendInvitation.InvitingUserId.ToString(),
+                        InvitedUserId = sendInvitation.InvitedUserId.ToString(),
+                        ItemId = item.ItemId,
+                        InvitationStatus = InvitationStatus.Hold,
+                        CreatedAt = DateTime.Now,
+                        EncryptedKey = item.EncryptedKey,
+                        EncryptedKeyNonce = item.EncryptedKeyNonce,
+                    };
+
+                    await _db.ItemInvitations.AddAsync(itemInvitation);
+                }
+            }
+
             await _db.SaveChangesAsync();
 
             _logger.Log
@@ -235,6 +258,8 @@ public class ShopInvitations
                 sendInvitation
             );
 
+            await transaction.CommitAsync();
+
             return Util_GenericResponse<bool>.Response
             (
                 true,
@@ -247,6 +272,8 @@ public class ShopInvitations
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return await Util_LogsHelper<bool, ShopInvitations>.ReturnInternalServerError
             (
                 ex,
@@ -262,12 +289,14 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> 
+    public async Task<Util_GenericResponse<bool>>
     AcceptInvitation
     (
         DTO_InvitationRequestActions accepInvitation
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
         try
         {
             var checkPassed = await GenerealChecks(accepInvitation.ShopId, accepInvitation.InvitingUserId, accepInvitation.InvitedUserId);
@@ -309,6 +338,36 @@ public class ShopInvitations
 
                 await _db.ShopShares.AddAsync(groupMember);
                 _db.Remove(invitation);
+
+                var shop = await _db.Shops.Include(x => x.Items).ThenInclude(x => x.ItemInvitations).FirstOrDefaultAsync(x => x.ShopId == accepInvitation.ShopId);
+
+                if (shop!.Items != null && shop.Items.Count != 0)
+                {
+                    foreach (var item in shop!.Items)
+                    {
+                        var itemInvitation = item.ItemInvitations.Where
+                        (
+                            x => x.InvitingUserId == accepInvitation.InvitingUserId.ToString() &&
+                            x.InvitedUserId == accepInvitation.InvitedUserId.ToString() &&
+                            x.InvitationStatus == InvitationStatus.Hold
+                        ).FirstOrDefault();
+
+                        if (itemInvitation is not null)
+                        {
+                            var itemMember = new ItemShare
+                            {
+                                CreatedAt = DateTime.Now,
+                                EncryptedKey = itemInvitation.EncryptedKey,
+                                EncryptedKeyNonce = itemInvitation.EncryptedKeyNonce,
+                                ItemId = item.ItemId,
+                                UserId = accepInvitation.InvitedUserId.ToString(),
+                            };
+
+                            await _db.ItemShares.AddAsync(itemMember);
+                        }
+                    }
+                }
+
                 await _db.SaveChangesAsync();
 
                 _logger.Log
@@ -325,6 +384,8 @@ public class ShopInvitations
                     accepInvitation.InvitingUserId,
                     accepInvitation.ShopId
                 );
+
+                await transaction.CommitAsync();
 
                 return Util_GenericResponse<bool>.Response
                 (
@@ -364,6 +425,8 @@ public class ShopInvitations
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return await Util_LogsHelper<bool, ShopInvitations>.ReturnInternalServerError
             (
                ex,
@@ -379,7 +442,7 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> 
+    public async Task<Util_GenericResponse<bool>>
     RejectInvitation
     (
         DTO_InvitationRequestActions rejectInvitation
@@ -488,7 +551,7 @@ public class ShopInvitations
         }
     }
 
-    public async Task<Util_GenericResponse<bool>> 
+    public async Task<Util_GenericResponse<bool>>
     DeleteSentInvitation
     (
         DTO_InvitationRequestActions deleteInvitation
@@ -597,8 +660,8 @@ public class ShopInvitations
 
     private async Task<bool> GenerealChecks
     (
-        Guid shopId, 
-        Guid invitingUserId, 
+        Guid shopId,
+        Guid invitingUserId,
         Guid invitedUserId
     )
     {
