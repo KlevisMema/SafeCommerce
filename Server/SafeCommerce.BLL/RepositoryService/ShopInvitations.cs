@@ -12,7 +12,6 @@ using SafeCommerce.DataAccessLayer.Models;
 using SafeCommerce.Utilities.Dependencies;
 using SafeCommerce.DataTransormObject.Invitation;
 using SafeShare.DataAccessLayer.Models;
-using System.Threading;
 
 namespace SafeCommerce.BLL.RepositoryService;
 
