@@ -25,4 +25,5 @@ public static class BaseRoute
     public const string RouteProxyShopInvitationForClient = "api/ShopInvitatonProxy/";
     public const string RouteProxyItemInvitationForClient = "api/ItemInvitatonProxy/";
     public const string ProxyRouteAccountManagmentForClient = "api/AccountManagmentProxy/";
+    public const string ProxyRouteCheckOut = "api/CheckOutProxy/";
 }

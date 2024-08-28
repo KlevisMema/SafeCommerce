@@ -4,16 +4,19 @@ using SafeCommerce.ClientDTO.Item;
 using Microsoft.AspNetCore.Components;
 using SafeCommerce.Client.Internal.Helpers;
 using SafeCommerce.ClientServices.Interfaces;
+using SafeCommerce.Client.Internal;
+using MudBlazor;
 
 namespace SafeCommerce.Client.Pages.Item;
 
 public partial class ItemsForSale
 {
     [Parameter] public Guid ShopId { get; set; }
-
+    [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] private IClientService_Item ItemService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private ShoppingCartService ShoppingCartService { get; set; } = null!;
     [Inject] private ILocalStorageService LocalStorageService { get; set; } = null!;
     [Inject] private IAuthenticationService AuthenticationService { get; set; } = null!;
 
@@ -62,6 +65,31 @@ public partial class ItemsForSale
 
                 }
             }
+        }
+    }
+
+    private async Task
+    AddItemInShoppingBag
+    (
+        ClientDto_Item item
+    )
+    {
+        try
+        {
+            await ShoppingCartService.AddItemAsync(new ClientDto_CartItem
+            {
+                ItemId = item.ItemId,
+                ImageUrl = item.Picture,
+                Name = item.Name,
+                Price = item.Price,
+                Quantity = 1
+            });
+
+            _snackbar.Add("Item added in the shopping bag.", Severity.Success, config => { config.CloseAfterNavigation = true; });
+        }
+        catch (Exception)
+        {
+            _snackbar.Add("Item was not added in shopping bag!", Severity.Error, config => { config.CloseAfterNavigation = true; });
         }
     }
 }

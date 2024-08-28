@@ -34,7 +34,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
                 { nameof(ClientDto_Register.PhoneNumber), register.PhoneNumber },
                 { nameof(ClientDto_Register.Password), register.Password },
                 { nameof(ClientDto_Register.ConfirmPassword), register.ConfirmPassword },
-                { nameof(ClientDto_Register.TwoFA), register.TwoFA.ToString() },
+                { nameof(ClientDto_Register.Enable2FA), register.Enable2FA.ToString() },
             };
 
             var contentForm = new FormUrlEncodedContent(registerData);
