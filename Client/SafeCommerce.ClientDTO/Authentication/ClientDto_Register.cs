@@ -41,5 +41,5 @@ public class ClientDto_Register
     [StringLength(100, MinimumLength = 6, ErrorMessage = "Invalid password length")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    public bool TwoFA { get; set; }
+    public bool Enable2FA { get; set; } = false;
 }

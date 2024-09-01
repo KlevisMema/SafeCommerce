@@ -1,0 +1,11 @@
+﻿@page "/Cancel-CheckOut"
+@inject NavigationManager navigationManager
+
+<PageTitle>Safe Commerce - Cancel Check Out</PageTitle>
+
+<div class="MudPaperWrapper">
+    <MudPaper Class="pa-16 ma-2" Outlined="false" Square="true" Elevation="20">
+        <MudText Color="Color.Primary" Class="bePatient">Your order was canceled. Try again later.</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => navigationManager.NavigateTo("/Dashboard", true ))">Redirect me</MudButton>
+    </MudPaper>
+</div>

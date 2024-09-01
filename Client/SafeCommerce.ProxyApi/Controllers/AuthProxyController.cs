@@ -28,7 +28,7 @@ public class AuthProxyController
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     Register
     (
-    [FromForm] DTO_Register register
+        [FromForm] DTO_Register register
     )
     {
         if (!ModelState.IsValid)
@@ -88,7 +88,6 @@ public class AuthProxyController
     }
 
     [HttpPost(Route_AuthenticationRoute.ConfirmLogin)]
-    [Authorize(Roles = "User, Moderator")]
     public async Task<ActionResult<Util_GenericResponse<DTO_LoginResult>>>
     ConfirmLogin
     (

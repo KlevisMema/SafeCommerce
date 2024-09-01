@@ -1,0 +1,38 @@
+﻿@page "/Success-CheckOut"
+
+<PageTitle>Safe Commerce - Succsess Check Out</PageTitle>
+
+<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .MudPaperWrapper .mud-paper{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .MudPaperWrapper .mud-typography{
+        font-size: 20px;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="MudPaperWrapper">
+    <MudPaper Class="pa-16 ma-2" Outlined="false" Square="true" Elevation="20">
+        <MudText Color="Color.Primary" Class="bePatient">Your order was complete. Thank you for your purchase.</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RedirectToRequestAccountConfirmation">Redirect me</MudButton>
+    </MudPaper>
+</div>

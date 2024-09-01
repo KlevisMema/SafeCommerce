@@ -1,6 +1,7 @@
 using Serilog;
 using SafeCommerce.ProxyApi.Helpers;
 using SafeCommerce.ProxyApi.Helpers.Middlewares;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 

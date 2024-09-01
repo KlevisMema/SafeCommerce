@@ -12,7 +12,8 @@ using SafeCommerce.ClientServices.Services;
 using SafeCommerce.ClientServices.Interfaces;
 using SafeCommerce.ClientServices.Authentication;
 using SafeCommerce.ClientServices.Services.UserManagment;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting; 
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Blazored.SessionStorage;
 #endregion
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -41,10 +42,13 @@ builder.Services.AddHttpClient(ClientUtilHelpers_Statics.HttpClientName, client 
 
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<TokenExpiryHandler>();
+builder.Services.AddScoped<ShoppingCartService>();
 builder.Services.AddScoped<IClientService_Shop, ClientService_Shop>();
 builder.Services.AddScoped<IClientService_Item, ClientService_Item>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IClientService_CheckOut, ClientService_CheckOut>();
 builder.Services.AddScoped<IClientService_Moderation, ClientService_Moderation>();
 builder.Services.AddScoped<IClientService_Invitation, ClientService_Invitation>();
 builder.Services.AddScoped<IClientService_UserManagment, ClientService_UserManagment>();

@@ -21,6 +21,8 @@
     }
 </style>
 
+<PageTitle>Safe Commerce - Items For Sale</PageTitle>
+
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
     <MudPaper Class="p-4" Elevation="2">
         @if (ItemsOfShop.Count > 0)
@@ -39,7 +41,7 @@
                                 </MudText>
                             </MudCardContent>
                             <MudCardActions>
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary">Buy Now</MudButton>
+                                <MudButton OnClick="@(async () => await AddItemInShoppingBag(item))" Variant="Variant.Filled" Color="Color.Primary">Buy Now</MudButton>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>

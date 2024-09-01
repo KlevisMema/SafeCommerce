@@ -1,4 +1,23 @@
-﻿<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
+﻿<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .mt-8 {
+        margin-top: 2rem;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
     <MudExpansionPanels MultiExpansion="true">
         <MudExpansionPanel Text="Public Shops" Expanded="true">
             <MudGrid>
@@ -50,7 +69,7 @@
                                 </MudText>
                             </MudCardContent>
                             <MudCardActions>
-                                <MudButton Variant="Variant.Filled">Buy Now</MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await AddItemInShoppingBag(item))">Buy Now</MudButton>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>

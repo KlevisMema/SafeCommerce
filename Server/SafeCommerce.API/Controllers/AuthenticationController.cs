@@ -133,7 +133,7 @@ public class AuthenticationController
     
     [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AuthenticationRoute.ConfirmLogin)]
-    [Authorize(AuthenticationSchemes = "ConfirmLogin", Roles = "User, Moderator")]
+    [Authorize(AuthenticationSchemes = "ConfirmLogin")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -142,8 +142,8 @@ public class AuthenticationController
     public async Task<ActionResult<Util_GenericResponse<DTO_LoginResult>>>
     ConfirmLogin
     (
-        Guid userId,
-        DTO_ConfirmLogin confirmLogin
+        [FromRoute] Guid userId,
+        [FromBody] DTO_ConfirmLogin confirmLogin
     )
     {
         if (!ModelState.IsValid)

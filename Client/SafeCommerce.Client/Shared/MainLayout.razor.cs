@@ -23,6 +23,7 @@ public partial class MainLayout
     [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
     [Inject] IClientService_Invitation InvitationService { get; set; } = null!;
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
+    [Inject] private ShoppingCartService ShoppingCartService { get; set; } = null!;
     [Inject] private IClientService_UserManagment _userManagment { get; set; } = null!;
     [Inject] private IAuthenticationService _authenticationService { get; set; } = null!;
 

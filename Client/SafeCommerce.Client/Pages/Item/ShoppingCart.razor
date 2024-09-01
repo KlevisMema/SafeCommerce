@@ -2,13 +2,34 @@
 
 @using MudBlazor
 
+<style>
+    :root {
+        --mud-palette-black: rgba(39, 44, 52, 1);
+        --mud-palette-white: rgba(255, 255, 255, 1);
+        --mud-palette-primary: #00838F;
+        --background-color4: #E0F7FA;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .mt-8 {
+        margin-top: 2rem;
+    }
+</style>
+
+<PageTitle>Safe Commerce - Shopping Cart</PageTitle>
+
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
     <MudPaper Class="p-4" Elevation="2">
         <MudText Typo="Typo.h4" Class="mb-4">Shopping Cart</MudText>
 
-        @if (CartItems.Any())
+        @if (ShoppingCartService.GetCartItems().Any())
         {
-            <MudTable Items="CartItems" Class="mb-4">
+            <MudTable Items="ShoppingCartService.GetCartItems()" Class="mb-4">
                 <HeaderContent>
                     <MudTh>Product</MudTh>
                     <MudTh>Name</MudTh>
@@ -19,7 +40,7 @@
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>
-                        <MudAvatar Image="@context.ImageUrl" Size="Size.Large" Class="mr-2" />
+                        <MudImage Src="@("data:image/*;base64," + context.ImageUrl)" Elevation="3" Height="100" Style="border-radius: 10px" Class="mr-2" />
                     </MudTd>
                     <MudTd>@context.Name</MudTd>
                     <MudTd>@($"${context.Price:F2}")</MudTd>
@@ -39,7 +60,7 @@
 
             <MudGrid>
                 <MudItem xs="12" sm="6" md="6">
-                    <MudText Typo="Typo.h5">Total Price: @($"${TotalPrice:F2}")</MudText>
+                    <MudText Typo="Typo.h5">Total Price: @($"${ShoppingCartService.GetTotalPrice():F2}")</MudText>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="6" Align="Align.End">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Checkout">Checkout</MudButton>
@@ -52,72 +73,3 @@
         }
     </MudPaper>
 </MudContainer>
-
-@code {
-    private List<CartItem> CartItems { get; set; } = new();
-
-    private decimal TotalPrice => CartItems.Sum(item => item.TotalPrice);
-
-    protected override void OnInitialized()
-    {
-        // Initialize with some items in the cart
-        CartItems.Add(new CartItem
-            {
-                Name = "Awesome Gadget",
-                Price = 199.99m,
-                Quantity = 1,
-                ImageUrl = "https://via.placeholder.com/100x100"
-            });
-        CartItems.Add(new CartItem
-            {
-                Name = "Smart Home Device",
-                Price = 299.99m,
-                Quantity = 1,
-                ImageUrl = "https://via.placeholder.com/100x100"
-            });
-        CartItems.Add(new CartItem
-            {
-                Name = "Wireless Earbuds",
-                Price = 89.99m,
-                Quantity = 2,
-                ImageUrl = "https://via.placeholder.com/100x100"
-            });
-    }
-
-    private void IncreaseQuantity(CartItem item)
-    {
-        item.Quantity++;
-    }
-
-    private void DecreaseQuantity(CartItem item)
-    {
-        if (item.Quantity > 1)
-        {
-            item.Quantity--;
-        }
-    }
-
-    private void RemoveItem(CartItem item)
-    {
-        CartItems.Remove(item);
-    }
-
-    private void Checkout()
-    {
-        // Handle checkout logic
-        Console.WriteLine("Checkout with total price: $" + TotalPrice);
-    }
-
-    public class CartItem
-    {
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
-        public string ImageUrl { get; set; }
-
-        public decimal TotalPrice => Price * Quantity;
-
-        public bool CanDecrease => Quantity > 1;
-    }
-}
-

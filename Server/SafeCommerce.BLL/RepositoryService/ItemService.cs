@@ -861,7 +861,7 @@ public class ItemService
     {
         try
         {
-            var items = await _db.Items.Where(i => i.ShopId == null && i.MakePublic == true && i.IsPublic == true && i.IsApproved == true).ToListAsync(cancellationToken);
+            var items = await _db.Items.Where(i => i.ShopId == null && i.MakePublic == true && i.IsPublic == true && i.IsApproved == true && i.OwnerId != userId).ToListAsync(cancellationToken);
 
             var itemDtos = _mapper.Map<List<DTO_PublicItem>>(items);
 

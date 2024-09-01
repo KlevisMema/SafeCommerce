@@ -454,7 +454,7 @@ public class ProxyAuthentication
         {
             if (argException.Message.Equals(ClientUtil_ExceptionResponse.ArgumentNullException))
             {
-                logger.LogCritical(argException, "Exception in SaveUserPublicKey.");
+                logger.LogCritical(argException, "Exception in ConfirmLogin2FA.");
 
                 return new Util_GenericResponse<DTO_LoginResult>()
                 {

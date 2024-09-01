@@ -1,6 +1,5 @@
 ﻿using MudBlazor;
 using Microsoft.AspNetCore.Components;
-using SafeCommerce.ClientDTO.Authentication;
 using SafeCommerce.ClientServices.Interfaces;
 using SafeCommerce.ClientDTO.AccountManagment;
 
